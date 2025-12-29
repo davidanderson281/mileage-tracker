@@ -1,30 +1,38 @@
 # Mileage Tracker
 
-A modern React application for tracking car trips and mileage, built with Vite, Firebase Firestore, and Tailwind CSS. Perfect for managing business and personal vehicle mileage with a responsive design that works on both desktop and mobile.
+🚗 **Live Demo:** [https://mileage-tracker-ruby.vercel.app/](https://mileage-tracker-ruby.vercel.app/)
+
+A modern React application for tracking weekly car mileage, built with Vite, Firebase Firestore, and Tailwind CSS. Track multiple vehicles, monitor weekly mileage against annual limits, and visualize your driving trends with interactive charts.
 
 ## Features
 
-- ✨ Add trips with start/end odometer readings, date, purpose, and notes
-- 📊 Automatic distance calculation
-- 🔄 Real-time data sync with Firebase Firestore
-- 📱 Fully responsive design for mobile and desktop
-- 🗑️ Delete trips functionality
-- 📈 Total distance tracking
-- 🎨 Beautiful UI with Tailwind CSS
+- 🚗 **Multi-Car Tracking**: Manage multiple vehicles with individual mileage limits
+- 📅 **Weekly Sunday Readings**: Track odometer readings every Sunday
+- 📊 **Smart Calculations**: Automatic weekly mileage differences and status alerts
+- 🎯 **Expected vs Actual**: Compare actual mileage against prorated annual limits
+- 📈 **Visual Trends**: Interactive line charts showing mileage trends over time
+- 📦 **Bulk Import**: Import historical readings from tab-separated data
+- ✅ **Status Indicators**: Color-coded alerts for weekly limits (≤96 mi = good, >96 mi = warning)
+- 📱 **Pagination**: Clean table view with 10 readings per page
+- 💼 **Contract Tracking**: Track delivery mileage, contract months, and end dates
+- 🔄 **Real-time Sync**: Live updates with Firebase Firestore
+- 📱 **Fully Responsive**: Beautiful UI that works on desktop and mobile
+- 🗑️ **Easy Management**: Add and delete readings with confirmation
 
 ## Tech Stack
 
-- **Frontend**: React 19 + Vite
-- **Styling**: Tailwind CSS
+- **Frontend**: React 19 + Vite 7.3
+- **Styling**: Tailwind CSS v3
 - **Database**: Firebase Firestore
-- **Deployment Ready**: Optimized build for production
+- **Charts**: Recharts
+- **Deployment**: Vercel
 
 ## Setup Instructions
 
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/mileage-tracker.git
+git clone https://github.com/davidanderson281/mileage-tracker.git
 cd mileage-tracker
 ```
 
