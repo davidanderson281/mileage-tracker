@@ -1,9 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
-  const { loginWithGoogle } = useAuth();
+  const { loginWithGoogle, authError } = useAuth();
   const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    if (authError) setErrorMessage(authError);
+  }, [authError]);
 
   const handleGoogleSignIn = async () => {
     try {
