@@ -150,42 +150,49 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
         </div>
 
         {/* Pagination Controls */}
-        <div className="mt-6 flex justify-center items-center gap-2">
+        <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-3">
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+            className="w-full sm:w-auto px-4 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 text-sm font-medium"
           >
             ← Previous
           </button>
           
-          <div className="flex gap-1">
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-              <button
-                key={page}
-                onClick={() => setCurrentPage(page)}
-                className={`px-3 py-2 rounded-md font-medium transition ${
-                  currentPage === page
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                }`}
-              >
-                {page}
-              </button>
-            ))}
+          <div className="flex gap-1 flex-wrap justify-center max-w-full">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+              // On mobile, show only current page, first, last, and adjacent pages
+              const showOnMobile = page === 1 || 
+                                   page === totalPages || 
+                                   Math.abs(page - currentPage) <= 1;
+              
+              return (
+                <button
+                  key={page}
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-2 rounded-md font-medium transition text-sm ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                  } ${!showOnMobile ? 'hidden sm:inline-block' : ''}`}
+                >
+                  {page}
+                </button>
+              );
+            })}
           </div>
 
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+            className="w-full sm:w-auto px-4 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 text-sm font-medium"
           >
             Next →
           </button>
         </div>
 
         <p className="text-center text-sm text-gray-600 mt-3">
-          Page {currentPage} of {totalPages} • Showing {paginatedReadings.length} of {readingsWithDiff.length} readings
+          Page {currentPage} of {totalPages} • {paginatedReadings.length} of {readingsWithDiff.length} readings
         </p>
       </div>
 
