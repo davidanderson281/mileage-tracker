@@ -93,7 +93,8 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
       <div className="bg-white rounded-lg shadow-md p-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-6">📈 Weekly Readings</h2>
 
-        <div className="overflow-x-auto">
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-gray-200">
@@ -149,6 +150,50 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
           </table>
         </div>
 
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-3">
+          {paginatedReadings.map((reading) => {
+            const status = getWeeklyStatus(reading.weeklyDiff);
+            const onTrackStatus = getOnTrackStatus(reading.expectedDiff);
+            return (
+              <div key={reading.id} className={`border border-gray-200 rounded-lg p-4 ${status.bg}`}>
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <p className="font-semibold text-gray-900">{formatDate(reading.date)}</p>
+                  </div>
+                  <button
+                    onClick={() => onDeleteReading(reading.id)}
+                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                  >
+                    Delete
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-sm mt-3">
+                  <div>
+                    <p className="text-gray-600">Mileage</p>
+                    <p className="font-semibold text-gray-900">{reading.mileage.toFixed(1)}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-600">Weekly Diff</p>
+                    <p className={`font-semibold ${status.text}`}>
+                      {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
+                    </p>
+                  </div>
+                </div>
+                <div className={`mt-2 text-sm font-medium text-center py-1 rounded ${status.text}`}>
+                  {status.label}
+                </div>
+                {car?.annualLimit && reading.expectedDiff !== null && (
+                  <div className="mt-2 text-sm">
+                    <p className="text-gray-600">Expected: {(reading.mileage - reading.expectedDiff).toFixed(0)}</p>
+                    <p className={`font-medium ${onTrackStatus.text}`}>{onTrackStatus.label}</p>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
         {/* Pagination Controls */}
         <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-3">
           <button
@@ -194,50 +239,6 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
         <p className="text-center text-sm text-gray-600 mt-3">
           Page {currentPage} of {totalPages} • {paginatedReadings.length} of {readingsWithDiff.length} readings
         </p>
-      </div>
-
-      {/* Mobile-friendly card view */}
-      <div className="md:hidden mt-4 space-y-3">
-        {paginatedReadings.map((reading) => {
-          const status = getWeeklyStatus(reading.weeklyDiff);
-          const onTrackStatus = getOnTrackStatus(reading.expectedDiff);
-          return (
-            <div key={reading.id} className={`border border-gray-200 rounded-lg p-4 ${status.bg}`}>
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-semibold text-gray-900">{formatDate(reading.date)}</p>
-                </div>
-                <button
-                  onClick={() => onDeleteReading(reading.id)}
-                  className="text-red-600 hover:text-red-800 text-sm font-medium"
-                >
-                  Delete
-                </button>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm mt-3">
-                <div>
-                  <p className="text-gray-600">Mileage</p>
-                  <p className="font-semibold text-gray-900">{reading.mileage.toFixed(1)}</p>
-                </div>
-                <div>
-                  <p className="text-gray-600">Weekly Diff</p>
-                  <p className={`font-semibold ${status.text}`}>
-                    {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
-                  </p>
-                </div>
-              </div>
-              <div className={`mt-2 text-sm font-medium text-center py-1 rounded ${status.text}`}>
-                {status.label}
-              </div>
-              {car?.annualLimit && reading.expectedDiff !== null && (
-                <div className="mt-2 text-sm">
-                  <p className="text-gray-600">Expected: {(reading.mileage - reading.expectedDiff).toFixed(0)}</p>
-                  <p className={`font-medium ${onTrackStatus.text}`}>{onTrackStatus.label}</p>
-                </div>
-              )}
-            </div>
-          );
-        })}
       </div>
 
       {/* Chart */}
