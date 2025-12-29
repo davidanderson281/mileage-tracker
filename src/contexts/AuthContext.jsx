@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signInWithPopup, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
+import { onAuthStateChanged, signInWithRedirect, getRedirectResult, signOut } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 
 const AuthContext = createContext();
@@ -16,17 +16,11 @@ export function AuthProvider({ children }) {
   const loginWithGoogle = async () => {
     try {
       setAuthError('');
-      await signInWithPopup(auth, googleProvider);
+      await signInWithRedirect(auth, googleProvider);
     } catch (error) {
-      console.error('Login error (popup):', error);
-      // Fallback to redirect to avoid popup/COOP issues
-      try {
-        await signInWithRedirect(auth, googleProvider);
-      } catch (redirectError) {
-        console.error('Login error (redirect):', redirectError);
-        setAuthError(redirectError?.message || 'Sign-in failed.');
-        throw redirectError;
-      }
+      console.error('Login error (redirect):', error);
+      setAuthError(error?.message || 'Sign-in failed.');
+      throw error;
     }
   };
 
@@ -41,10 +35,14 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     // Handle redirect results if present
-    getRedirectResult(auth).catch((err) => {
-      console.error('Redirect login error:', err);
-      setAuthError(err?.message || 'Sign-in failed.');
-    });
+    getRedirectResult(auth)
+      .then(() => {
+        setAuthError('');
+      })
+      .catch((err) => {
+        console.error('Redirect login error:', err);
+        setAuthError(err?.message || 'Sign-in failed.');
+      });
 
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
