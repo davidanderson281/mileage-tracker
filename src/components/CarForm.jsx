@@ -4,6 +4,9 @@ export default function CarForm({ onAddCar }) {
   const [formData, setFormData] = useState({
     name: '',
     annualLimit: '',
+    deliveryMileage: '',
+    contractEndDate: '',
+    contractMonths: '',
     registrationNumber: ''
   });
 
@@ -13,6 +16,9 @@ export default function CarForm({ onAddCar }) {
     const car = {
       name: formData.name,
       annualLimit: parseFloat(formData.annualLimit),
+      deliveryMileage: parseFloat(formData.deliveryMileage || 0),
+      contractEndDate: formData.contractEndDate,
+      contractMonths: parseInt(formData.contractMonths || 0, 10),
       registrationNumber: formData.registrationNumber,
       createdAt: new Date().toISOString()
     };
@@ -22,6 +28,9 @@ export default function CarForm({ onAddCar }) {
     setFormData({
       name: '',
       annualLimit: '',
+      deliveryMileage: '',
+      contractEndDate: '',
+      contractMonths: '',
       registrationNumber: ''
     });
   };
@@ -38,7 +47,7 @@ export default function CarForm({ onAddCar }) {
     <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 mb-6">
       <h2 className="text-2xl font-bold text-gray-800 mb-4">🚗 Add New Car</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Car Name
@@ -66,6 +75,52 @@ export default function CarForm({ onAddCar }) {
             required
             step="1"
             placeholder="e.g., 5000"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Delivery Mileage
+          </label>
+          <input
+            type="number"
+            name="deliveryMileage"
+            value={formData.deliveryMileage}
+            onChange={handleChange}
+            required
+            step="1"
+            placeholder="e.g., 120"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Contract Length (months)
+          </label>
+          <input
+            type="number"
+            name="contractMonths"
+            value={formData.contractMonths}
+            onChange={handleChange}
+            required
+            step="1"
+            placeholder="e.g., 36"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Contract End Date
+          </label>
+          <input
+            type="date"
+            name="contractEndDate"
+            value={formData.contractEndDate}
+            onChange={handleChange}
+            required
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>

@@ -26,6 +26,15 @@ export default function CarList({ cars, onSelectCar, selectedCarId, onDeleteCar 
                 <p className="text-sm font-medium text-blue-600 mt-2">
                   Annual Limit: {car.annualLimit} miles
                 </p>
+                <p className="text-sm text-gray-700">
+                  Delivery mileage: {car.deliveryMileage ?? 0} miles
+                </p>
+                <p className="text-sm text-gray-700">
+                  Contract: {car.contractMonths ? `${car.contractMonths} mo` : 'n/a'}
+                </p>
+                <p className="text-sm text-gray-700">
+                  Ends: {car.contractEndDate ? car.contractEndDate : 'n/a'}
+                </p>
               </div>
               <button
                 onClick={(e) => {

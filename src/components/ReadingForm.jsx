@@ -1,14 +1,15 @@
 import { useState } from 'react';
+import ImportReadingsModal from './ImportReadingsModal';
 
 export default function ReadingForm({ carId, carName, onAddReading }) {
+  const [showImportModal, setShowImportModal] = useState(false);
   const today = new Date();
   const lastSunday = new Date(today);
   lastSunday.setDate(today.getDate() - today.getDay());
   
   const [formData, setFormData] = useState({
     date: lastSunday.toISOString().split('T')[0],
-    mileage: '',
-    notes: ''
+    mileage: ''
   });
 
   const [error, setError] = useState('');
@@ -27,7 +28,6 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
       carId,
       date: formData.date,
       mileage,
-      notes: formData.notes,
       timestamp: new Date().toISOString()
     };
 
@@ -39,8 +39,7 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
     
     setFormData({
       date: nextSunday.toISOString().split('T')[0],
-      mileage: '',
-      notes: ''
+      mileage: ''
     });
   };
 
@@ -71,7 +70,7 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Sunday Date
@@ -101,20 +100,6 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Notes (Optional)
-          </label>
-          <input
-            type="text"
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-            placeholder="e.g., Business trip"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
       </div>
 
       <button
@@ -123,6 +108,22 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
       >
         Record Reading
       </button>
+      <button
+        type="button"
+        onClick={() => setShowImportModal(true)}
+        className="mt-4 ml-2 px-6 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+      >
+        📥 Import Historical Data
+      </button>
+
+      {showImportModal && (
+        <ImportReadingsModal
+          carId={carId}
+          carName={carName}
+          onClose={() => setShowImportModal(false)}
+          onSuccess={onAddReading}
+        />
+      )}
     </form>
   );
 }

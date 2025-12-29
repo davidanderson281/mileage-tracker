@@ -1,4 +1,11 @@
+import { useState } from 'react';
+import MileageChart from './MileageChart';
+
+const ITEMS_PER_PAGE = 10;
+
 export default function ReadingsList({ readings, car, onDeleteReading }) {
+  const [currentPage, setCurrentPage] = useState(1);
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -23,10 +30,28 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
     // Expected vs Actual (based on annual limit)
     if (car?.annualLimit) {
       const readingDate = new Date(reading.date);
-      const yearStart = new Date(readingDate.getFullYear(), 0, 1);
-      const daysIntoYear = Math.floor((readingDate - yearStart) / (1000 * 60 * 60 * 24));
-      const expectedMileage = (car.annualLimit / 365) * daysIntoYear;
-      expectedDiff = reading.mileage - expectedMileage;
+      const delivery = car.deliveryMileage ?? 0;
+      const msPerDay = 1000 * 60 * 60 * 24;
+
+      const hasContract = car.contractEndDate && car.contractMonths > 0;
+
+      if (hasContract) {
+        const endDate = new Date(car.contractEndDate);
+        const startDate = new Date(endDate);
+        startDate.setMonth(startDate.getMonth() - car.contractMonths);
+
+        const totalDays = Math.max((endDate - startDate) / msPerDay, 1);
+        const elapsedDays = Math.min(Math.max((readingDate - startDate) / msPerDay, 0), totalDays);
+
+        const totalContractMiles = car.annualLimit * (car.contractMonths / 12);
+        const expectedMileage = delivery + (totalContractMiles * (elapsedDays / totalDays));
+        expectedDiff = reading.mileage - expectedMileage;
+      } else {
+        const yearStart = new Date(readingDate.getFullYear(), 0, 1);
+        const daysIntoYear = Math.floor((readingDate - yearStart) / msPerDay);
+        const expectedMileage = delivery + (car.annualLimit / 365) * daysIntoYear;
+        expectedDiff = reading.mileage - expectedMileage;
+      }
     }
 
     return { ...reading, weeklyDiff, expectedDiff };
@@ -47,79 +72,133 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
       : { bg: 'bg-green-50', text: 'text-green-700', label: '✅ Good' };
   };
 
-  return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">📈 Weekly Readings</h2>
+  const getOnTrackStatus = (expectedDiff) => {
+    if (expectedDiff === null) return { text: 'text-gray-600', label: '-' };
+    // Negative means under expected (good), positive means over expected (bad)
+    const absDiff = Math.abs(expectedDiff).toFixed(0);
+    return expectedDiff <= 0
+      ? { text: 'text-green-700', label: `✅ On Track (${absDiff} mi)` }
+      : { text: 'text-red-700', label: `⚠️ Over (${absDiff} mi)` };
+  };
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b-2 border-gray-200">
-              <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Date</th>
-              <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Mileage</th>
-              <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Weekly Diff</th>
-              <th className="text-center py-3 px-2 text-sm font-semibold text-gray-700">Status</th>
-              {car?.annualLimit && (
-                <>
-                  <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Expected</th>
-                  <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Difference</th>
-                </>
-              )}
-              <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Notes</th>
-              <th className="py-3 px-2"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {readingsWithDiff.map((reading) => {
-              const status = getWeeklyStatus(reading.weeklyDiff);
-              return (
-                <tr key={reading.id} className={`border-b border-gray-100 ${status.bg}`}>
-                  <td className="py-3 px-2 text-sm text-gray-900">{formatDate(reading.date)}</td>
-                  <td className="py-3 px-2 text-sm font-semibold text-gray-900 text-right">{reading.mileage.toFixed(1)}</td>
-                  <td className={`py-3 px-2 text-sm font-semibold text-right ${status.text}`}>
-                    {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
-                  </td>
-                  <td className={`py-3 px-2 text-sm text-center font-medium ${status.text}`}>
-                    {status.label}
-                  </td>
-                  {car?.annualLimit && (
-                    <>
-                      <td className="py-3 px-2 text-sm text-gray-600 text-right">
-                        {reading.expectedDiff !== null ? (reading.mileage - reading.expectedDiff).toFixed(0) : '-'}
-                      </td>
-                      <td className={`py-3 px-2 text-sm font-semibold text-right ${
-                        reading.expectedDiff !== null && reading.expectedDiff < 0 ? 'text-red-600' : 'text-green-600'
-                      }`}>
-                        {reading.expectedDiff !== null ? (reading.expectedDiff > 0 ? '+' : '') + reading.expectedDiff.toFixed(0) : '-'}
-                      </td>
-                    </>
-                  )}
-                  <td className="py-3 px-2 text-sm text-gray-600 max-w-xs truncate">{reading.notes || '-'}</td>
-                  <td className="py-3 px-2 text-right">
-                    <button
-                      onClick={() => onDeleteReading(reading.id)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+  // Pagination
+  const totalPages = Math.ceil(readingsWithDiff.length / ITEMS_PER_PAGE);
+  const startIdx = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIdx = startIdx + ITEMS_PER_PAGE;
+  const paginatedReadings = readingsWithDiff.slice(startIdx, endIdx);
+
+  return (
+    <div className="space-y-6">
+      {/* Table */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">📈 Weekly Readings</h2>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b-2 border-gray-200">
+                <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Date</th>
+                <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Mileage</th>
+                <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Weekly Diff</th>
+                <th className="text-center py-3 px-2 text-sm font-semibold text-gray-700">Status</th>
+                {car?.annualLimit && (
+                  <>
+                    <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Expected</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-gray-700">On Track</th>
+                  </>
+                )}
+                <th className="py-3 px-2"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {paginatedReadings.map((reading) => {
+                const status = getWeeklyStatus(reading.weeklyDiff);
+                const onTrackStatus = getOnTrackStatus(reading.expectedDiff);
+                return (
+                  <tr key={reading.id} className={`border-b border-gray-100 ${status.bg}`}>
+                    <td className="py-3 px-2 text-sm text-gray-900">{formatDate(reading.date)}</td>
+                    <td className="py-3 px-2 text-sm font-semibold text-gray-900 text-right">{reading.mileage.toFixed(1)}</td>
+                    <td className={`py-3 px-2 text-sm font-semibold text-right ${status.text}`}>
+                      {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
+                    </td>
+                    <td className={`py-3 px-2 text-sm text-center font-medium ${status.text}`}>
+                      {status.label}
+                    </td>
+                    {car?.annualLimit && (
+                      <>
+                        <td className="py-3 px-2 text-sm text-gray-600 text-right">
+                          {reading.expectedDiff !== null ? (reading.mileage - reading.expectedDiff).toFixed(0) : '-'}
+                        </td>
+                        <td className={`py-3 px-2 text-sm text-center font-medium ${onTrackStatus.text}`}>
+                          {onTrackStatus.label}
+                        </td>
+                      </>
+                    )}
+                    <td className="py-3 px-2 text-right">
+                      <button
+                        onClick={() => onDeleteReading(reading.id)}
+                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination Controls */}
+        <div className="mt-6 flex justify-center items-center gap-2">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-3 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+          >
+            ← Previous
+          </button>
+          
+          <div className="flex gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`px-3 py-2 rounded-md font-medium transition ${
+                  currentPage === page
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+          </div>
+
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages}
+            className="px-3 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400"
+          >
+            Next →
+          </button>
+        </div>
+
+        <p className="text-center text-sm text-gray-600 mt-3">
+          Page {currentPage} of {totalPages} • Showing {paginatedReadings.length} of {readingsWithDiff.length} readings
+        </p>
       </div>
 
       {/* Mobile-friendly card view */}
       <div className="md:hidden mt-4 space-y-3">
-        {readingsWithDiff.map((reading) => {
+        {paginatedReadings.map((reading) => {
           const status = getWeeklyStatus(reading.weeklyDiff);
+          const onTrackStatus = getOnTrackStatus(reading.expectedDiff);
           return (
             <div key={reading.id} className={`border border-gray-200 rounded-lg p-4 ${status.bg}`}>
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="font-semibold text-gray-900">{formatDate(reading.date)}</p>
-                  <p className="text-sm text-gray-600">{reading.notes || 'No notes'}</p>
                 </div>
                 <button
                   onClick={() => onDeleteReading(reading.id)}
@@ -144,14 +223,18 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                 {status.label}
               </div>
               {car?.annualLimit && reading.expectedDiff !== null && (
-                <div className="mt-2 text-sm text-gray-600">
-                  <p>Expected: {(reading.mileage - reading.expectedDiff).toFixed(0)} | Diff: {reading.expectedDiff > 0 ? '+' : ''}{reading.expectedDiff.toFixed(0)}</p>
+                <div className="mt-2 text-sm">
+                  <p className="text-gray-600">Expected: {(reading.mileage - reading.expectedDiff).toFixed(0)}</p>
+                  <p className={`font-medium ${onTrackStatus.text}`}>{onTrackStatus.label}</p>
                 </div>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Chart */}
+      <MileageChart readings={readingsWithDiff} car={car} />
     </div>
   );
 }

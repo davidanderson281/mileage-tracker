@@ -49,8 +49,7 @@ function App() {
 
     const q = query(
       collection(db, 'readings'),
-      where('carId', '==', selectedCarId),
-      orderBy('date', 'desc')
+      where('carId', '==', selectedCarId)
     );
     
     const unsubscribe = onSnapshot(q, 
@@ -59,6 +58,8 @@ function App() {
           id: doc.id,
           ...doc.data()
         }));
+        // Sort client-side by date desc to avoid Firestore composite index requirement
+        readingsData.sort((a, b) => new Date(b.date) - new Date(a.date));
         setReadings(readingsData);
       },
       (err) => {
