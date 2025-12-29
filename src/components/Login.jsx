@@ -1,13 +1,19 @@
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Login() {
   const { loginWithGoogle } = useAuth();
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleGoogleSignIn = async () => {
     try {
+      setErrorMessage('');
       await loginWithGoogle();
     } catch (error) {
-      alert('Failed to sign in. Please try again.');
+      console.error('Google sign-in failed:', error);
+      const message = error?.message || 'Failed to sign in. Please try again.';
+      setErrorMessage(message);
+      alert(message);
     }
   };
 
@@ -45,6 +51,10 @@ export default function Login() {
             Sign in with Google
           </button>
         </div>
+
+        {errorMessage && (
+          <p className="mt-4 text-sm text-red-600 text-center">{errorMessage}</p>
+        )}
 
         <div className="mt-6 text-center text-sm text-gray-500">
           <p>Sign in to access your personal mileage data</p>
