@@ -16,6 +16,16 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Reset data when user logs out
+  useEffect(() => {
+    if (!currentUser) {
+      setCars([]);
+      setSelectedCarId(null);
+      setReadings([]);
+      setLoading(false);
+    }
+  }, [currentUser]);
+
   if (!currentUser) {
     return <Login />;
   }
