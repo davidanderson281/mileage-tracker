@@ -8,7 +8,7 @@ function parseDate(dateStr) {
 }
 
 // Bulk import readings
-export async function importReadings(carId, rawData) {
+export async function importReadings(carId, rawData, userId) {
   const lines = rawData.trim().split('\n');
   const readings = [];
 
@@ -18,6 +18,7 @@ export async function importReadings(carId, rawData) {
 
     readings.push({
       carId,
+      userId,
       date: parseDate(dateStr),
       mileage: parseFloat(mileageStr),
       timestamp: new Date().toISOString()

@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { importReadings } from '../utils/importReadings';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function ImportReadingsModal({ carId, carName, onClose, onSuccess }) {
+  const { currentUser } = useAuth();
   const [rawData, setRawData] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -18,7 +20,7 @@ export default function ImportReadingsModal({ carId, carName, onClose, onSuccess
     setResult(null);
 
     try {
-      const res = await importReadings(carId, rawData);
+      const res = await importReadings(carId, rawData, currentUser.uid);
       setResult(res);
       if (res.errorCount === 0) {
         setTimeout(() => {

@@ -1,21 +1,32 @@
 import { useState, useEffect } from 'react';
 import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Login from './components/Login';
 import CarForm from './components/CarForm';
 import CarList from './components/CarList';
 import ReadingForm from './components/ReadingForm';
 import ReadingsList from './components/ReadingsList';
 
-function App() {
+function AppContent() {
+  const { currentUser, logout } = useAuth();
   const [cars, setCars] = useState([]);
   const [selectedCarId, setSelectedCarId] = useState(null);
   const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  if (!currentUser) {
+    return <Login />;
+  }
+
   // Subscribe to cars collection
   useEffect(() => {
-    const q = query(collection(db, 'cars'), orderBy('createdAt', 'desc'));
+    const q = query(
+      collection(db, 'cars'),
+      where('userId', '==', currentUser.uid),
+      orderBy('createdAt', 'desc')
+    );
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
@@ -38,7 +49,7 @@ function App() {
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [currentUser]);
 
   // Subscribe to readings for selected car
   useEffect(() => {
@@ -49,7 +60,8 @@ function App() {
 
     const q = query(
       collection(db, 'readings'),
-      where('carId', '==', selectedCarId)
+      where('carId', '==', selectedCarId),
+      where('userId', '==', currentUser.uid)
     );
     
     const unsubscribe = onSnapshot(q, 
@@ -69,11 +81,14 @@ function App() {
     );
 
     return () => unsubscribe();
-  }, [selectedCarId]);
+  }, [selectedCarId, currentUser]);
 
   const handleAddCar = async (car) => {
     try {
-      await addDoc(collection(db, 'cars'), car);
+      await addDoc(collection(db, 'cars'), {
+        ...car,
+        userId: currentUser.uid
+      });
     } catch (err) {
       console.error('Error adding car:', err);
       alert('Failed to add car. Please check your Firebase configuration.');
@@ -82,7 +97,10 @@ function App() {
 
   const handleAddReading = async (reading) => {
     try {
-      await addDoc(collection(db, 'readings'), reading);
+      await addDoc(collection(db, 'readings'), {
+        ...reading,
+        userId: currentUser.uid
+      });
     } catch (err) {
       console.error('Error adding reading:', err);
       alert('Failed to add reading.');
@@ -127,9 +145,24 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <header className="text-center mb-8">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
-            🚗 Mileage Tracker
-          </h1>
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex-1"></div>
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800 flex-1">
+              🚗 Mileage Tracker
+            </h1>
+            <div className="flex-1 flex justify-end items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm text-gray-600">{currentUser.displayName}</p>
+                <p className="text-xs text-gray-500">{currentUser.email}</p>
+              </div>
+              <button
+                onClick={logout}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition text-sm font-medium"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
           <p className="text-gray-600">Track weekly mileage and stay within your annual limit</p>
         </header>
 
@@ -183,4 +216,10 @@ function App() {
   );
 }
 
-export default App;
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  );
+}
