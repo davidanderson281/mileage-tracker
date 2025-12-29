@@ -6,6 +6,7 @@ A modern React application for tracking weekly car mileage, built with Vite, Fir
 
 ## Features
 
+- 🔐 **Secure Authentication**: Google Sign-In with Firebase Authentication
 - 🚗 **Multi-Car Tracking**: Manage multiple vehicles with individual mileage limits
 - 📅 **Weekly Sunday Readings**: Track odometer readings every Sunday
 - 📊 **Smart Calculations**: Automatic weekly mileage differences and status alerts
@@ -16,6 +17,7 @@ A modern React application for tracking weekly car mileage, built with Vite, Fir
 - 📱 **Pagination**: Clean table view with 10 readings per page
 - 💼 **Contract Tracking**: Track delivery mileage, contract months, and end dates
 - 🔄 **Real-time Sync**: Live updates with Firebase Firestore
+- 🔒 **Private Data**: User-based access control - your data is yours alone
 - 📱 **Fully Responsive**: Beautiful UI that works on desktop and mobile
 - 🗑️ **Easy Management**: Add and delete readings with confirmation
 
