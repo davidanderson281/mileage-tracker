@@ -1,31 +1,38 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, where, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
-import TripForm from './components/TripForm';
-import TripList from './components/TripList';
+import CarForm from './components/CarForm';
+import CarList from './components/CarList';
+import ReadingForm from './components/ReadingForm';
+import ReadingsList from './components/ReadingsList';
 
 function App() {
-  const [trips, setTrips] = useState([]);
+  const [cars, setCars] = useState([]);
+  const [selectedCarId, setSelectedCarId] = useState(null);
+  const [readings, setReadings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Subscribe to cars collection
   useEffect(() => {
-    // Subscribe to trips collection
-    const q = query(collection(db, 'trips'), orderBy('date', 'desc'));
+    const q = query(collection(db, 'cars'), orderBy('createdAt', 'desc'));
     
     const unsubscribe = onSnapshot(q, 
       (snapshot) => {
-        const tripsData = snapshot.docs.map(doc => ({
+        const carsData = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
-        setTrips(tripsData);
+        setCars(carsData);
+        if (carsData.length > 0 && !selectedCarId) {
+          setSelectedCarId(carsData[0].id);
+        }
         setLoading(false);
         setError(null);
       },
       (err) => {
-        console.error('Error fetching trips:', err);
-        setError('Failed to load trips. Please check your Firebase configuration.');
+        console.error('Error fetching cars:', err);
+        setError('Failed to load cars. Please check your Firebase configuration.');
         setLoading(false);
       }
     );
@@ -33,25 +40,87 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  const handleAddTrip = async (trip) => {
+  // Subscribe to readings for selected car
+  useEffect(() => {
+    if (!selectedCarId) {
+      setReadings([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, 'readings'),
+      where('carId', '==', selectedCarId),
+      orderBy('date', 'desc')
+    );
+    
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const readingsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setReadings(readingsData);
+      },
+      (err) => {
+        console.error('Error fetching readings:', err);
+        setReadings([]);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [selectedCarId]);
+
+  const handleAddCar = async (car) => {
     try {
-      await addDoc(collection(db, 'trips'), trip);
+      await addDoc(collection(db, 'cars'), car);
     } catch (err) {
-      console.error('Error adding trip:', err);
-      alert('Failed to add trip. Please check your Firebase configuration.');
+      console.error('Error adding car:', err);
+      alert('Failed to add car. Please check your Firebase configuration.');
     }
   };
 
-  const handleDeleteTrip = async (id) => {
-    if (window.confirm('Are you sure you want to delete this trip?')) {
+  const handleAddReading = async (reading) => {
+    try {
+      await addDoc(collection(db, 'readings'), reading);
+    } catch (err) {
+      console.error('Error adding reading:', err);
+      alert('Failed to add reading.');
+    }
+  };
+
+  const handleDeleteCar = async (id) => {
+    if (window.confirm('Are you sure? This will delete the car and all its readings.')) {
       try {
-        await deleteDoc(doc(db, 'trips', id));
+        // Delete all readings for this car
+        const readingsQuery = query(collection(db, 'readings'), where('carId', '==', id));
+        const readingsSnapshot = await getDocs(readingsQuery);
+        for (const readingDoc of readingsSnapshot.docs) {
+          await deleteDoc(readingDoc.ref);
+        }
+        // Delete the car
+        await deleteDoc(doc(db, 'cars', id));
+        if (selectedCarId === id) {
+          setSelectedCarId(null);
+        }
       } catch (err) {
-        console.error('Error deleting trip:', err);
-        alert('Failed to delete trip.');
+        console.error('Error deleting car:', err);
+        alert('Failed to delete car.');
       }
     }
   };
+
+  const handleDeleteReading = async (id) => {
+    if (window.confirm('Are you sure you want to delete this reading?')) {
+      try {
+        await deleteDoc(doc(db, 'readings', id));
+      } catch (err) {
+        console.error('Error deleting reading:', err);
+        alert('Failed to delete reading.');
+      }
+    }
+  };
+
+  const selectedCar = cars.find(car => car.id === selectedCarId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -60,7 +129,7 @@ function App() {
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-2">
             🚗 Mileage Tracker
           </h1>
-          <p className="text-gray-600">Track your car trips and mileage</p>
+          <p className="text-gray-600">Track weekly mileage and stay within your annual limit</p>
         </header>
 
         {error && (
@@ -69,14 +138,44 @@ function App() {
           </div>
         )}
 
-        <TripForm onAddTrip={handleAddTrip} />
-
         {loading ? (
           <div className="bg-white rounded-lg shadow-md p-8 text-center">
-            <p className="text-gray-500">Loading trips...</p>
+            <p className="text-gray-500">Loading...</p>
           </div>
         ) : (
-          <TripList trips={trips} onDeleteTrip={handleDeleteTrip} />
+          <>
+            <CarForm onAddCar={handleAddCar} />
+            
+            {cars.length > 0 && (
+              <CarList 
+                cars={cars} 
+                selectedCarId={selectedCarId}
+                onSelectCar={setSelectedCarId}
+                onDeleteCar={handleDeleteCar}
+              />
+            )}
+
+            {selectedCar && (
+              <>
+                <ReadingForm 
+                  carId={selectedCarId}
+                  carName={selectedCar.name}
+                  onAddReading={handleAddReading}
+                />
+                <ReadingsList 
+                  readings={readings} 
+                  car={selectedCar}
+                  onDeleteReading={handleDeleteReading}
+                />
+              </>
+            )}
+
+            {cars.length === 0 && (
+              <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                <p className="text-gray-500 text-lg">Add your first car to get started!</p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
