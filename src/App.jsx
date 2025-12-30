@@ -124,7 +124,11 @@ function AppContent() {
     if (window.confirm('Are you sure? This will delete the car and all its readings.')) {
       try {
         // Delete all readings for this car
-        const readingsQuery = query(collection(db, 'readings'), where('carId', '==', id));
+        const readingsQuery = query(
+          collection(db, 'readings'), 
+          where('carId', '==', id),
+          where('userId', '==', currentUser.uid)
+        );
         const readingsSnapshot = await getDocs(readingsQuery);
         for (const readingDoc of readingsSnapshot.docs) {
           await deleteDoc(readingDoc.ref);
@@ -180,7 +184,7 @@ function AppContent() {
         <header className="text-center mb-8">
           <div className="flex justify-between items-center mb-4">
             <div className="flex-1"></div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white flex-1">
+            <h1 className="text-3xl md:text-4xl font-bold text-white flex-1">
               🚗 Mileage Tracker
             </h1>
             <div className="flex-1 flex justify-end items-center gap-3">
@@ -250,8 +254,8 @@ function AppContent() {
 
             {/* Add Car Modal */}
             {showAddCarModal && (
-              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-                <div className="bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full border border-gray-700">
+              <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-y-auto">
+                <div className="bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl border border-gray-700 my-8">
                   <div className="flex justify-between items-center p-6 border-b border-gray-700">
                     <h2 className="text-2xl font-bold text-white">Add New Car</h2>
                     <button

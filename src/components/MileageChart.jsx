@@ -55,13 +55,13 @@ export default function MileageChart({ readings, car }) {
   // Canvas-based simple line chart
   if (useCanvas && !canUseRecharts) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Mileage Trend</h3>
+      <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+        <h3 className="text-xl font-bold text-white mb-4">📊 Mileage Trend</h3>
         <CanvasChart data={chartData} />
         {canUseRecharts && (
           <button
             onClick={() => setUseCanvas(false)}
-            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
           >
             Switch to Advanced Chart
           </button>
@@ -73,8 +73,8 @@ export default function MileageChart({ readings, car }) {
   // Recharts-based chart (if available)
   if (canUseRecharts) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">📊 Mileage Trend</h3>
+      <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+        <h3 className="text-xl font-bold text-white mb-4">📊 Mileage Trend</h3>
         <RechartsChart data={chartData} />
       </div>
     );

@@ -54,7 +54,7 @@ export default function CarForm({ onAddCar, isDarkMode = false }) {
     <form onSubmit={handleSubmit} className={`${bgClass} rounded-lg shadow-md p-6 mb-6 ${isDarkMode ? 'border border-gray-600' : ''}`}>
       <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'} mb-4`}>🚗 Add New Car</h2>
       
-      <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+      <div className={`grid gap-4 ${isDarkMode ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-6'}`}>
         <div>
           <label className={`block text-sm font-medium ${labelClass} mb-1`}>
             Car Name
