@@ -118,9 +118,9 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                 return (
                   <tr key={reading.id} className={`border-b border-gray-700 ${status.bg}`}>
                     <td className="py-3 px-2 text-sm text-gray-100">{formatDate(reading.date)}</td>
-                    <td className="py-3 px-2 text-sm font-semibold text-gray-100 text-right">{reading.mileage.toFixed(1)}</td>
+                    <td className="py-3 px-2 text-sm font-semibold text-gray-100 text-right">{reading.mileage}</td>
                     <td className={`py-3 px-2 text-sm font-semibold text-right ${status.text}`}>
-                      {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
+                      {reading.weeklyDiff ? reading.weeklyDiff : '-'}
                     </td>
                     <td className={`py-3 px-2 text-sm text-center font-medium ${status.text}`}>
                       {status.label}
@@ -171,12 +171,12 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                 <div className="grid grid-cols-2 gap-2 text-sm mt-3">
                   <div>
                     <p className="text-gray-400">Mileage</p>
-                    <p className="font-semibold text-gray-100">{reading.mileage.toFixed(1)}</p>
+                    <p className="font-semibold text-gray-100">{reading.mileage}</p>
                   </div>
                   <div>
                     <p className="text-gray-400">Weekly Diff</p>
                     <p className={`font-semibold ${status.text}`}>
-                      {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
+                      {reading.weeklyDiff ? reading.weeklyDiff : '-'}
                     </p>
                   </div>
                 </div>

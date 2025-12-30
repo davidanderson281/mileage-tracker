@@ -20,7 +20,7 @@ export async function importReadings(carId, rawData, userId) {
       carId,
       userId,
       date: parseDate(dateStr),
-      mileage: parseFloat(mileageStr),
+      mileage: parseInt(mileageStr, 10),
       timestamp: new Date().toISOString()
     });
   }

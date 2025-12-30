@@ -18,7 +18,7 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
     e.preventDefault();
     setError('');
     
-    const mileage = parseFloat(formData.mileage);
+    const mileage = parseInt(formData.mileage, 10);
     if (isNaN(mileage) || mileage < 0) {
       setError('Please enter a valid mileage value');
       return;
@@ -95,8 +95,8 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
             value={formData.mileage}
             onChange={handleChange}
             required
-            step="0.1"
-            placeholder="e.g., 45234.5"
+            step="1"
+            placeholder="e.g., 45234"
             className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
