@@ -280,34 +280,3 @@ function RechartsChart({ data }) {
     </div>
   );
 }
-            name="Expected Mileage"
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
-      contentStyle={{ backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '4px' }}
-            formatter={(value) => value ? value.toFixed(0) : '-'}
-        />
-        <Legend />
-        <Line
-          type="monotone"
-          dataKey="actual"
-          stroke="#3b82f6"
-          name="Actual Mileage"
-          dot={{ fill: '#3b82f6', r: 4 }}
-          strokeWidth={2}
-        />
-        <Line
-          type="monotone"
-          dataKey="expected"
-          stroke="#10b981"
-          name="Expected Mileage"
-          strokeDasharray="5 5"
-          strokeWidth={2}
-          dot={false}
-        />
-      </LineChart>
-    </ResponsiveContainer>
-  );
-}
