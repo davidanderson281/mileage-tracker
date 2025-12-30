@@ -236,6 +236,7 @@ function AppContent() {
                 <ReadingForm 
                   carId={selectedCarId}
                   carName={selectedCar.name}
+                  existingReadings={readings}
                   onAddReading={handleAddReading}
                 />
                 <ReadingsList 

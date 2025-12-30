@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import ImportReadingsModal from './ImportReadingsModal';
 
-export default function ReadingForm({ carId, carName, onAddReading }) {
+export default function ReadingForm({ carId, carName, existingReadings, onAddReading }) {
   const [showImportModal, setShowImportModal] = useState(false);
   const today = new Date();
   const lastSunday = new Date(today);
@@ -21,6 +21,15 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
     const mileage = parseInt(formData.mileage, 10);
     if (isNaN(mileage) || mileage < 0) {
       setError('Please enter a valid mileage value');
+      return;
+    }
+
+    // Check for duplicate date
+    const duplicateDate = existingReadings.find(
+      reading => reading.date === formData.date
+    );
+    if (duplicateDate) {
+      setError(`A reading already exists for ${formData.date}. Please delete the existing reading first or choose a different date.`);
       return;
     }
 
