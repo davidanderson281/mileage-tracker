@@ -98,8 +98,8 @@ function CanvasChart({ data }) {
     const chartWidth = width - 2 * padding;
     const chartHeight = height - 2 * padding;
 
-    // Clear canvas
-    ctx.fillStyle = '#fff';
+    // Clear canvas with dark background
+    ctx.fillStyle = '#1f2937';
     ctx.fillRect(0, 0, width, height);
 
     // Get max value
@@ -112,7 +112,7 @@ function CanvasChart({ data }) {
     const scaleX = (index) => padding + (index / (data.length - 1)) * chartWidth;
 
     // Draw grid
-    ctx.strokeStyle = '#e5e7eb';
+    ctx.strokeStyle = '#374151';
     ctx.lineWidth = 1;
     for (let i = 0; i <= 5; i++) {
       const y = padding + (chartHeight / 5) * i;
@@ -123,13 +123,16 @@ function CanvasChart({ data }) {
     }
 
     // Draw axes
-    ctx.strokeStyle = '#374151';
+    ctx.strokeStyle = '#9ca3af';
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(padding, padding);
     ctx.lineTo(padding, height - padding);
     ctx.lineTo(width - padding, height - padding);
     ctx.stroke();
+
+    // Setup text color for dark theme
+    ctx.fillStyle = '#d1d5db';
 
     // Draw expected line
     if (data.some(d => d.expected)) {
@@ -194,7 +197,7 @@ function CanvasChart({ data }) {
     ctx.font = '14px sans-serif';
     ctx.fillStyle = '#3b82f6';
     ctx.fillRect(width - 200, 10, 16, 16);
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = '#d1d5db';
     ctx.textAlign = 'left';
     ctx.fillText('Actual Mileage', width - 175, 22);
 
@@ -202,7 +205,7 @@ function CanvasChart({ data }) {
     ctx.setLineDash([5, 5]);
     ctx.strokeRect(width - 200, 35, 16, 16);
     ctx.setLineDash([]);
-    ctx.fillStyle = '#1f2937';
+    ctx.fillStyle = '#d1d5db';
     ctx.fillText('Expected Mileage', width - 175, 47);
   }, [data]);
 
@@ -211,7 +214,7 @@ function CanvasChart({ data }) {
       ref={canvasRef}
       width={800}
       height={400}
-      className="w-full border border-gray-200 rounded-md"
+      className="w-full border border-gray-600 rounded-md"
     />
   );
 }
@@ -235,19 +238,47 @@ function RechartsChart({ data }) {
   }
 
   return (
-    <ResponsiveContainer width="100%" height={400}>
-      <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-        <XAxis
-          dataKey="date"
-          stroke="#6b7280"
-          style={{ fontSize: '12px' }}
-        />
-        <YAxis
-          stroke="#6b7280"
-          style={{ fontSize: '12px' }}
-        />
-        <Tooltip
+    <div className="bg-gray-700 p-4 rounded-md">
+      <ResponsiveContainer width="100%" height={400}>
+        <LineChart data={data} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#4b5563" />
+          <XAxis
+            dataKey="date"
+            stroke="#9ca3af"
+            style={{ fontSize: '12px' }}
+          />
+          <YAxis
+            stroke="#9ca3af"
+            style={{ fontSize: '12px' }}
+          />
+          <Tooltip
+            contentStyle={{ backgroundColor: '#374151', border: '1px solid #4b5563', borderRadius: '4px' }}
+            labelStyle={{ color: '#d1d5db' }}
+          />
+          <Legend
+            wrapperStyle={{ color: '#d1d5db' }}
+          />
+          <Line
+            type="monotone"
+            dataKey="actual"
+            stroke="#3b82f6"
+            strokeWidth={2}
+            dot={false}
+            name="Actual Mileage"
+          />
+          <Line
+            type="monotone"
+            dataKey="expected"
+            stroke="#10b981"
+            strokeWidth={2}
+            strokeDasharray="5 5"
+            dot={false}
+            name="Expected Mileage"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
       contentStyle={{ backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '4px' }}
             formatter={(value) => value ? value.toFixed(0) : '-'}
         />
