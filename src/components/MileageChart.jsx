@@ -279,6 +279,13 @@ function RechartsChart({ data }) {
       </ResponsiveContainer>
     </div>
   );
+}
+            name="Expected Mileage"
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
       contentStyle={{ backgroundColor: '#fff', border: '1px solid #ddd', borderRadius: '4px' }}
             formatter={(value) => value ? value.toFixed(0) : '-'}
         />
