@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function CarForm({ onAddCar }) {
+export default function CarForm({ onAddCar, isDarkMode = false }) {
   const [formData, setFormData] = useState({
     name: '',
     annualLimit: '',
@@ -43,13 +43,20 @@ export default function CarForm({ onAddCar }) {
     }));
   };
 
+  const bgClass = isDarkMode ? 'bg-gray-700 text-gray-100' : 'bg-white';
+  const labelClass = isDarkMode ? 'text-gray-300' : 'text-gray-700';
+  const inputClass = isDarkMode 
+    ? 'bg-gray-600 border-gray-500 text-white focus:ring-blue-400' 
+    : 'border-gray-300 focus:ring-blue-500';
+  const buttonClass = isDarkMode ? 'bg-blue-600 hover:bg-blue-700' : 'bg-blue-500 hover:bg-blue-600';
+
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">🚗 Add New Car</h2>
+    <form onSubmit={handleSubmit} className={`${bgClass} rounded-lg shadow-md p-6 mb-6 ${isDarkMode ? 'border border-gray-600' : ''}`}>
+      <h2 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-800'} mb-4`}>🚗 Add New Car</h2>
       
       <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
             Car Name
           </label>
           <input
@@ -59,12 +66,12 @@ export default function CarForm({ onAddCar }) {
             onChange={handleChange}
             required
             placeholder="e.g., Work Car, Family Car"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${inputClass}`}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
             Annual Mileage Limit
           </label>
           <input
@@ -75,12 +82,12 @@ export default function CarForm({ onAddCar }) {
             required
             step="1"
             placeholder="e.g., 5000"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${inputClass}`}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
             Delivery Mileage
           </label>
           <input
@@ -91,12 +98,12 @@ export default function CarForm({ onAddCar }) {
             required
             step="1"
             placeholder="e.g., 120"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${inputClass}`}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
             Contract Length (months)
           </label>
           <input
@@ -107,12 +114,12 @@ export default function CarForm({ onAddCar }) {
             required
             step="1"
             placeholder="e.g., 36"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${inputClass}`}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
             Contract End Date
           </label>
           <input
@@ -121,12 +128,12 @@ export default function CarForm({ onAddCar }) {
             value={formData.contractEndDate}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${inputClass}`}
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
             Registration Number (Optional)
           </label>
           <input
@@ -135,14 +142,14 @@ export default function CarForm({ onAddCar }) {
             value={formData.registrationNumber}
             onChange={handleChange}
             placeholder="e.g., ABC123"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${inputClass}`}
           />
         </div>
       </div>
 
       <button
         type="submit"
-        className="mt-4 w-full md:w-auto px-6 py-2 bg-green-600 text-white font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors"
+        className={`mt-4 w-full md:w-auto px-6 py-2 ${buttonClass} text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 transition-colors ${isDarkMode ? 'focus:ring-offset-gray-700' : ''}`}
       >
         Add Car
       </button>

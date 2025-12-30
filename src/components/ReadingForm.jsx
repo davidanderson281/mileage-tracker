@@ -53,26 +53,26 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
 
   if (!carId) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-        <p className="text-center text-gray-500">Please select a car first to record readings</p>
+      <div className="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
+        <p className="text-center text-gray-400">Please select a car first to record readings</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-1">📊 Record Weekly Reading</h2>
-      <p className="text-sm text-gray-600 mb-4">{carName}</p>
+    <form onSubmit={handleSubmit} className="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
+      <h2 className="text-2xl font-bold text-white mb-1">📊 Record Weekly Reading</h2>
+      <p className="text-sm text-gray-400 mb-4">{carName}</p>
       
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-3 py-2 rounded mb-4">
+        <div className="bg-red-900 border border-red-700 text-red-200 px-3 py-2 rounded mb-4">
           {error}
         </div>
       )}
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-300 mb-1">
             Sunday Date
           </label>
           <input
@@ -81,12 +81,12 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
             value={formData.date}
             onChange={handleChange}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-gray-300 mb-1">
             Current Mileage
           </label>
           <input
@@ -97,21 +97,21 @@ export default function ReadingForm({ carId, carName, onAddReading }) {
             required
             step="0.1"
             placeholder="e.g., 45234.5"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
       </div>
 
       <button
         type="submit"
-        className="mt-4 w-full md:w-auto px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+        className="mt-4 w-full md:w-auto px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors focus:ring-offset-gray-800"
       >
         Record Reading
       </button>
       <button
         type="button"
         onClick={() => setShowImportModal(true)}
-        className="mt-4 ml-2 px-6 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors"
+        className="mt-4 ml-2 px-6 py-2 bg-purple-600 text-white font-medium rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors focus:ring-offset-gray-800"
       >
         📥 Import Historical Data
       </button>

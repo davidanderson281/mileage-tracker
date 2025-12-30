@@ -59,26 +59,26 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
 
   if (readings.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <p className="text-gray-500 text-lg">No readings recorded yet. Add your first reading above!</p>
+      <div className="bg-gray-800 rounded-lg shadow-md p-8 text-center border border-gray-700">
+        <p className="text-gray-400 text-lg">No readings recorded yet. Add your first reading above!</p>
       </div>
     );
   }
 
   const getWeeklyStatus = (weeklyDiff) => {
-    if (!weeklyDiff) return { bg: 'bg-gray-50', text: 'text-gray-600', label: '-' };
+    if (!weeklyDiff) return { bg: 'bg-gray-700', text: 'text-gray-400', label: '-' };
     return weeklyDiff > 96 
-      ? { bg: 'bg-red-50', text: 'text-red-700', label: '⚠️ Over limit' }
-      : { bg: 'bg-green-50', text: 'text-green-700', label: '✅ Good' };
+      ? { bg: 'bg-red-900', text: 'text-red-200', label: '⚠️ Over limit' }
+      : { bg: 'bg-green-900', text: 'text-green-200', label: '✅ Good' };
   };
 
   const getOnTrackStatus = (expectedDiff) => {
-    if (expectedDiff === null) return { text: 'text-gray-600', label: '-' };
+    if (expectedDiff === null) return { text: 'text-gray-400', label: '-' };
     // Negative means under expected (good), positive means over expected (bad)
     const absDiff = Math.abs(expectedDiff).toFixed(0);
     return expectedDiff <= 0
-      ? { text: 'text-green-700', label: `✅ On Track (${absDiff} mi)` }
-      : { text: 'text-red-700', label: `⚠️ Over (${absDiff} mi)` };
+      ? { text: 'text-green-400', label: `✅ On Track (${absDiff} mi)` }
+      : { text: 'text-red-400', label: `⚠️ Over (${absDiff} mi)` };
   };
 
   // Pagination
@@ -90,22 +90,22 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
   return (
     <div className="space-y-6">
       {/* Table */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">📈 Weekly Readings</h2>
+      <div className="bg-gray-800 rounded-lg shadow-md p-6 border border-gray-700">
+        <h2 className="text-2xl font-bold text-white mb-6">📈 Weekly Readings</h2>
 
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b-2 border-gray-200">
-                <th className="text-left py-3 px-2 text-sm font-semibold text-gray-700">Date</th>
-                <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Mileage</th>
-                <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Weekly Diff</th>
-                <th className="text-center py-3 px-2 text-sm font-semibold text-gray-700">Status</th>
+              <tr className="border-b-2 border-gray-700">
+                <th className="text-left py-3 px-2 text-sm font-semibold text-gray-300">Date</th>
+                <th className="text-right py-3 px-2 text-sm font-semibold text-gray-300">Mileage</th>
+                <th className="text-right py-3 px-2 text-sm font-semibold text-gray-300">Weekly Diff</th>
+                <th className="text-center py-3 px-2 text-sm font-semibold text-gray-300">Status</th>
                 {car?.annualLimit && (
                   <>
-                    <th className="text-right py-3 px-2 text-sm font-semibold text-gray-700">Expected</th>
-                    <th className="text-center py-3 px-2 text-sm font-semibold text-gray-700">On Track</th>
+                    <th className="text-right py-3 px-2 text-sm font-semibold text-gray-300">Expected</th>
+                    <th className="text-center py-3 px-2 text-sm font-semibold text-gray-300">On Track</th>
                   </>
                 )}
                 <th className="py-3 px-2"></th>
@@ -116,9 +116,9 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                 const status = getWeeklyStatus(reading.weeklyDiff);
                 const onTrackStatus = getOnTrackStatus(reading.expectedDiff);
                 return (
-                  <tr key={reading.id} className={`border-b border-gray-100 ${status.bg}`}>
-                    <td className="py-3 px-2 text-sm text-gray-900">{formatDate(reading.date)}</td>
-                    <td className="py-3 px-2 text-sm font-semibold text-gray-900 text-right">{reading.mileage.toFixed(1)}</td>
+                  <tr key={reading.id} className={`border-b border-gray-700 ${status.bg}`}>
+                    <td className="py-3 px-2 text-sm text-gray-100">{formatDate(reading.date)}</td>
+                    <td className="py-3 px-2 text-sm font-semibold text-gray-100 text-right">{reading.mileage.toFixed(1)}</td>
                     <td className={`py-3 px-2 text-sm font-semibold text-right ${status.text}`}>
                       {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
                     </td>
@@ -127,7 +127,7 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                     </td>
                     {car?.annualLimit && (
                       <>
-                        <td className="py-3 px-2 text-sm text-gray-600 text-right">
+                        <td className="py-3 px-2 text-sm text-gray-300 text-right">
                           {reading.expectedDiff !== null ? (reading.mileage - reading.expectedDiff).toFixed(0) : '-'}
                         </td>
                         <td className={`py-3 px-2 text-sm text-center font-medium ${onTrackStatus.text}`}>
@@ -138,7 +138,7 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                     <td className="py-3 px-2 text-right">
                       <button
                         onClick={() => onDeleteReading(reading.id)}
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
+                        className="text-red-500 hover:text-red-400 text-sm font-medium"
                       >
                         Delete
                       </button>
@@ -156,25 +156,25 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
             const status = getWeeklyStatus(reading.weeklyDiff);
             const onTrackStatus = getOnTrackStatus(reading.expectedDiff);
             return (
-              <div key={reading.id} className={`border border-gray-200 rounded-lg p-4 ${status.bg}`}>
+              <div key={reading.id} className={`border border-gray-700 rounded-lg p-4 ${status.bg} bg-gray-800`}>
                 <div className="flex justify-between items-start mb-2">
                   <div>
-                    <p className="font-semibold text-gray-900">{formatDate(reading.date)}</p>
+                    <p className="font-semibold text-gray-100">{formatDate(reading.date)}</p>
                   </div>
                   <button
                     onClick={() => onDeleteReading(reading.id)}
-                    className="text-red-600 hover:text-red-800 text-sm font-medium"
+                    className="text-red-500 hover:text-red-400 text-sm font-medium"
                   >
                     Delete
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-sm mt-3">
                   <div>
-                    <p className="text-gray-600">Mileage</p>
-                    <p className="font-semibold text-gray-900">{reading.mileage.toFixed(1)}</p>
+                    <p className="text-gray-400">Mileage</p>
+                    <p className="font-semibold text-gray-100">{reading.mileage.toFixed(1)}</p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Weekly Diff</p>
+                    <p className="text-gray-400">Weekly Diff</p>
                     <p className={`font-semibold ${status.text}`}>
                       {reading.weeklyDiff ? reading.weeklyDiff.toFixed(1) : '-'}
                     </p>
@@ -185,7 +185,7 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                 </div>
                 {car?.annualLimit && reading.expectedDiff !== null && (
                   <div className="mt-2 text-sm">
-                    <p className="text-gray-600">Expected: {(reading.mileage - reading.expectedDiff).toFixed(0)}</p>
+                    <p className="text-gray-400">Expected: {(reading.mileage - reading.expectedDiff).toFixed(0)}</p>
                     <p className={`font-medium ${onTrackStatus.text}`}>{onTrackStatus.label}</p>
                   </div>
                 )}
@@ -199,7 +199,7 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
           <button
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
-            className="w-full sm:w-auto px-4 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 text-sm font-medium"
+            className="w-full sm:w-auto px-4 py-2 bg-gray-700 text-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 text-sm font-medium"
           >
             ← Previous
           </button>
@@ -218,7 +218,7 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
                   className={`px-3 py-2 rounded-md font-medium transition text-sm ${
                     currentPage === page
                       ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+                      : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                   } ${!showOnMobile ? 'hidden sm:inline-block' : ''}`}
                 >
                   {page}
@@ -230,13 +230,13 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
           <button
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}
-            className="w-full sm:w-auto px-4 py-2 bg-gray-300 text-gray-800 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-400 text-sm font-medium"
+            className="w-full sm:w-auto px-4 py-2 bg-gray-700 text-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600 text-sm font-medium"
           >
             Next →
           </button>
         </div>
 
-        <p className="text-center text-sm text-gray-600 mt-3">
+        <p className="text-center text-sm text-gray-400 mt-3">
           Page {currentPage} of {totalPages} • {paginatedReadings.length} of {readingsWithDiff.length} readings
         </p>
       </div>
