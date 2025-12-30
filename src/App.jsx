@@ -16,26 +16,19 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Reset data when user logs out
+  // Subscribe to cars collection
   useEffect(() => {
     if (!currentUser) {
       setCars([]);
       setSelectedCarId(null);
       setReadings([]);
       setLoading(false);
+      return;
     }
-  }, [currentUser]);
 
-  if (!currentUser) {
-    return <Login />;
-  }
-
-  // Subscribe to cars collection
-  useEffect(() => {
     const q = query(
       collection(db, 'cars'),
-      where('userId', '==', currentUser.uid),
-      orderBy('createdAt', 'desc')
+      where('userId', '==', currentUser.uid)
     );
     
     const unsubscribe = onSnapshot(q, 
@@ -44,6 +37,8 @@ function AppContent() {
           id: doc.id,
           ...doc.data()
         }));
+        // Sort client-side by createdAt desc to avoid composite index
+        carsData.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
         setCars(carsData);
         if (carsData.length > 0 && !selectedCarId) {
           setSelectedCarId(carsData[0].id);
@@ -63,7 +58,7 @@ function AppContent() {
 
   // Subscribe to readings for selected car
   useEffect(() => {
-    if (!selectedCarId) {
+    if (!currentUser || !selectedCarId) {
       setReadings([]);
       return;
     }
@@ -150,6 +145,11 @@ function AppContent() {
   };
 
   const selectedCar = cars.find(car => car.id === selectedCarId);
+
+  // Show login screen if not authenticated
+  if (!currentUser) {
+    return <Login />;
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
