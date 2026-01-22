@@ -43,9 +43,13 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
   const paginatedCharging = sortedCharging.slice(startIdx, endIdx);
 
   const getTypeColor = (type) => {
-    return type === 'home' 
-      ? { bg: 'bg-green-900', text: 'text-green-200', label: '🏠 Home' }
-      : { bg: 'bg-purple-900', text: 'text-purple-200', label: '⚡ Public' };
+    if (type === 'home') {
+      return { bg: 'bg-green-900', text: 'text-green-200', label: '🏠 Home' };
+    } else if (type === 'public') {
+      return { bg: 'bg-purple-900', text: 'text-purple-200', label: '⚡ Public' };
+    } else {
+      return { bg: 'bg-yellow-900', text: 'text-yellow-200', label: '🎁 Free' };
+    }
   };
 
   return (
@@ -62,11 +66,13 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
         </div>
         <div className="bg-gray-800 rounded-lg shadow-md p-4 border border-gray-700">
           <p className="text-gray-400 text-sm">Home Charging</p>
-          <p className="text-lg font-bold text-green-400">£{stats.homeCost.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-green-400">£{stats.homeCost.toFixed(2)}</p>
+          <p className="text-xs text-gray-400 mt-1">{stats.homeEnergy} kWh</p>
         </div>
         <div className="bg-gray-800 rounded-lg shadow-md p-4 border border-gray-700">
           <p className="text-gray-400 text-sm">Public Charging</p>
-          <p className="text-lg font-bold text-purple-400">£{stats.publicCost.toFixed(2)}</p>
+          <p className="text-sm font-semibold text-purple-400">£{stats.publicCost.toFixed(2)}</p>
+          <p className="text-xs text-gray-400 mt-1">{stats.publicEnergy} kWh</p>
         </div>
       </div>
 
@@ -84,6 +90,7 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
                 <th className="text-right py-3 px-2 text-sm font-semibold text-gray-300">Cost</th>
                 <th className="text-center py-3 px-2 text-sm font-semibold text-gray-300">Type</th>
                 <th className="text-right py-3 px-2 text-sm font-semibold text-gray-300">Cost/kWh</th>
+                <th className="text-left py-3 px-2 text-sm font-semibold text-gray-300">Notes</th>
                 <th className="py-3 px-2"></th>
               </tr>
             </thead>
@@ -102,6 +109,7 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
                       {typeColor.label}
                     </td>
                     <td className="py-3 px-2 text-sm text-gray-300 text-right">£{costPerUnit}</td>
+                    <td className="py-3 px-2 text-sm text-gray-400">{session.notes || '-'}</td>
                     <td className="py-3 px-2 text-right">
                       <button
                         onClick={() => onDeleteCharging(session.id)}
@@ -152,6 +160,12 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
                     <p className="font-semibold text-gray-100">£{costPerUnit}</p>
                   </div>
                 </div>
+                {session.notes && (
+                  <div className="mt-3 text-sm">
+                    <p className="text-gray-400">Notes</p>
+                    <p className="text-gray-300">{session.notes}</p>
+                  </div>
+                )}
               </div>
             );
           })}

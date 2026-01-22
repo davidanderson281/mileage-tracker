@@ -7,7 +7,9 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
     date: today,
     energy: '',
     cost: '',
-    type: 'home'
+    costPerKwh: '',
+    type: 'home',
+    notes: ''
   });
 
   const [error, setError] = useState('');
@@ -28,6 +30,18 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
       return;
     }
 
+    const costPerKwh = formData.costPerKwh ? Math.round(parseFloat(formData.costPerKwh) * 100) / 100 : null;
+    if (formData.costPerKwh && (isNaN(costPerKwh) || costPerKwh < 0)) {
+      setError('Please enter a valid cost per kWh');
+      return;
+    }
+
+    // Validate that either cost or costPerKwh is provided (except for "free" type)
+    if (formData.type !== 'free' && !cost && !costPerKwh) {
+      setError('Please enter either total cost or cost per kWh');
+      return;
+    }
+
     // Check for duplicate date
     const duplicateDate = existingCharging.find(
       charging => charging.date === formData.date && charging.type === formData.type
@@ -37,12 +51,19 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
       return;
     }
 
+    // Calculate total cost if costPerKwh is provided
+    let finalCost = cost;
+    if (costPerKwh && !cost) {
+      finalCost = Math.round(costPerKwh * energy * 100) / 100;
+    }
+
     const charging = {
       carId,
       date: formData.date,
       energy,
-      cost: cost,
+      cost: finalCost,
       type: formData.type,
+      notes: formData.notes || null,
       timestamp: new Date().toISOString()
     };
 
@@ -52,7 +73,9 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
       date: today,
       energy: '',
       cost: '',
-      type: 'home'
+      costPerKwh: '',
+      type: 'home',
+      notes: ''
     });
   };
 
@@ -127,6 +150,7 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
           >
             <option value="home">Home</option>
             <option value="public">Public</option>
+            <option value="free">Free</option>
           </select>
         </div>
 
@@ -145,6 +169,38 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
             className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
         </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-300 mb-1">
+            Cost per kWh (£) - Optional
+          </label>
+          <input
+            type="number"
+            name="costPerKwh"
+            value={formData.costPerKwh}
+            onChange={handleChange}
+            step="0.001"
+            min="0"
+            placeholder="e.g., 0.28"
+            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        {formData.type === 'free' && (
+          <div>
+            <label className="block text-sm font-medium text-gray-300 mb-1">
+              Notes - Optional
+            </label>
+            <input
+              type="text"
+              name="notes"
+              value={formData.notes}
+              onChange={handleChange}
+              placeholder="e.g., Work charging, Shopping centre"
+              className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+        )}
       </div>
 
       <button

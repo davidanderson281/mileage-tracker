@@ -21,6 +21,9 @@ export default function CarList({ cars, onSelectCar, selectedCarId, onDeleteCar,
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-semibold text-white">{car.name}</h3>
+                  {car.isElectric && (
+                    <span className="text-yellow-400 text-xl" title="Electric Vehicle">⚡</span>
+                  )}
                   {car.isDefault && (
                     <span className="bg-yellow-600 text-white text-xs px-2 py-1 rounded">Default</span>
                   )}
