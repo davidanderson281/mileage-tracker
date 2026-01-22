@@ -7,12 +7,15 @@ import CarForm from './components/CarForm';
 import CarList from './components/CarList';
 import ReadingForm from './components/ReadingForm';
 import ReadingsList from './components/ReadingsList';
+import ChargingForm from './components/ChargingForm';
+import ChargingsList from './components/ChargingsList';
 
 function AppContent() {
   const { currentUser, logout } = useAuth();
   const [cars, setCars] = useState([]);
   const [selectedCarId, setSelectedCarId] = useState(null);
   const [readings, setReadings] = useState([]);
+  const [charging, setCharging] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddCarModal, setShowAddCarModal] = useState(false);
@@ -93,6 +96,38 @@ function AppContent() {
     return () => unsubscribe();
   }, [selectedCarId, currentUser]);
 
+  // Subscribe to charging sessions for selected car
+  useEffect(() => {
+    if (!currentUser || !selectedCarId) {
+      setCharging([]);
+      return;
+    }
+
+    const q = query(
+      collection(db, 'charging'),
+      where('carId', '==', selectedCarId),
+      where('userId', '==', currentUser.uid)
+    );
+    
+    const unsubscribe = onSnapshot(q, 
+      (snapshot) => {
+        const chargingData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        // Sort client-side by date desc
+        chargingData.sort((a, b) => new Date(b.date) - new Date(a.date));
+        setCharging(chargingData);
+      },
+      (err) => {
+        console.error('Error fetching charging sessions:', err);
+        setCharging([]);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [selectedCarId, currentUser]);
+
   const handleAddCar = async (car) => {
     try {
       await addDoc(collection(db, 'cars'), {
@@ -120,8 +155,20 @@ function AppContent() {
     }
   };
 
+  const handleAddCharging = async (chargingSession) => {
+    try {
+      await addDoc(collection(db, 'charging'), {
+        ...chargingSession,
+        userId: currentUser.uid
+      });
+    } catch (err) {
+      console.error('Error adding charging session:', err);
+      alert('Failed to add charging session.');
+    }
+  };
+
   const handleDeleteCar = async (id) => {
-    if (window.confirm('Are you sure? This will delete the car and all its readings.')) {
+    if (window.confirm('Are you sure? This will delete the car and all its readings and charging sessions.')) {
       try {
         // Delete all readings for this car
         const readingsQuery = query(
@@ -132,6 +179,16 @@ function AppContent() {
         const readingsSnapshot = await getDocs(readingsQuery);
         for (const readingDoc of readingsSnapshot.docs) {
           await deleteDoc(readingDoc.ref);
+        }
+        // Delete all charging sessions for this car
+        const chargingQuery = query(
+          collection(db, 'charging'), 
+          where('carId', '==', id),
+          where('userId', '==', currentUser.uid)
+        );
+        const chargingSnapshot = await getDocs(chargingQuery);
+        for (const chargingDoc of chargingSnapshot.docs) {
+          await deleteDoc(chargingDoc.ref);
         }
         // Delete the car
         await deleteDoc(doc(db, 'cars', id));
@@ -167,6 +224,17 @@ function AppContent() {
       } catch (err) {
         console.error('Error deleting reading:', err);
         alert('Failed to delete reading.');
+      }
+    }
+  };
+
+  const handleDeleteCharging = async (id) => {
+    if (window.confirm('Are you sure you want to delete this charging session?')) {
+      try {
+        await deleteDoc(doc(db, 'charging', id));
+      } catch (err) {
+        console.error('Error deleting charging session:', err);
+        alert('Failed to delete charging session.');
       }
     }
   };
@@ -244,6 +312,22 @@ function AppContent() {
                   car={selectedCar}
                   onDeleteReading={handleDeleteReading}
                 />
+
+                {selectedCar.isElectric && (
+                  <>
+                    <ChargingForm
+                      carId={selectedCarId}
+                      carName={selectedCar.name}
+                      existingCharging={charging}
+                      onAddCharging={handleAddCharging}
+                    />
+                    <ChargingsList
+                      charging={charging}
+                      car={selectedCar}
+                      onDeleteCharging={handleDeleteCharging}
+                    />
+                  </>
+                )}
               </>
             )}
 

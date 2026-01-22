@@ -7,7 +7,8 @@ export default function CarForm({ onAddCar, isDarkMode = false }) {
     deliveryMileage: '',
     contractEndDate: '',
     contractMonths: '',
-    registrationNumber: ''
+    registrationNumber: '',
+    isElectric: false
   });
 
   const handleSubmit = (e) => {
@@ -20,6 +21,7 @@ export default function CarForm({ onAddCar, isDarkMode = false }) {
       contractEndDate: formData.contractEndDate,
       contractMonths: parseInt(formData.contractMonths || 0, 10),
       registrationNumber: formData.registrationNumber,
+      isElectric: formData.isElectric,
       createdAt: new Date().toISOString()
     };
 
@@ -31,15 +33,16 @@ export default function CarForm({ onAddCar, isDarkMode = false }) {
       deliveryMileage: '',
       contractEndDate: '',
       contractMonths: '',
-      registrationNumber: ''
+      registrationNumber: '',
+      isElectric: false
     });
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
@@ -68,6 +71,24 @@ export default function CarForm({ onAddCar, isDarkMode = false }) {
             placeholder="e.g., Work Car, Family Car"
             className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${inputClass}`}
           />
+        </div>
+
+        <div>
+          <label className={`block text-sm font-medium ${labelClass} mb-1`}>
+            Is Electric? ⚡
+          </label>
+          <div className="flex items-center h-10">
+            <input
+              type="checkbox"
+              name="isElectric"
+              checked={formData.isElectric}
+              onChange={handleChange}
+              className={`w-4 h-4 rounded ${isDarkMode ? 'bg-gray-600 border-gray-500' : 'border-gray-300'}`}
+            />
+            <span className={`ml-2 text-sm ${labelClass}`}>
+              {formData.isElectric ? 'Yes' : 'No'}
+            </span>
+          </div>
         </div>
 
         <div>
