@@ -22,7 +22,7 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
       return;
     }
 
-    const cost = formData.cost ? parseFloat(formData.cost) : null;
+    const cost = formData.cost ? Math.round(parseFloat(formData.cost) * 100) / 100 : null;
     if (formData.cost && (isNaN(cost) || cost < 0)) {
       setError('Please enter a valid cost');
       return;
@@ -132,7 +132,7 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
 
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-1">
-            Cost ($) - Optional
+            Cost (£) - Optional
           </label>
           <input
             type="number"

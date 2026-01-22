@@ -58,15 +58,15 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
         </div>
         <div className="bg-gray-800 rounded-lg shadow-md p-4 border border-gray-700">
           <p className="text-gray-400 text-sm">Total Cost</p>
-          <p className="text-2xl font-bold text-white">${stats.totalCost.toFixed(2)}</p>
+          <p className="text-2xl font-bold text-white">£{stats.totalCost.toFixed(2)}</p>
         </div>
         <div className="bg-gray-800 rounded-lg shadow-md p-4 border border-gray-700">
-          <p className="text-gray-400 text-sm">Cost per kWh</p>
-          <p className="text-2xl font-bold text-white">${costPerKwh}</p>
+          <p className="text-gray-400 text-sm">Home Charging</p>
+          <p className="text-lg font-bold text-green-400">£{stats.homeCost.toFixed(2)}</p>
         </div>
         <div className="bg-gray-800 rounded-lg shadow-md p-4 border border-gray-700">
-          <p className="text-gray-400 text-sm">Home / Public</p>
-          <p className="text-lg font-bold text-white">{stats.homeEnergy} / {stats.publicEnergy} kWh</p>
+          <p className="text-gray-400 text-sm">Public Charging</p>
+          <p className="text-lg font-bold text-purple-400">£{stats.publicCost.toFixed(2)}</p>
         </div>
       </div>
 
@@ -96,12 +96,12 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
                     <td className="py-3 px-2 text-sm text-gray-100">{formatDate(session.date)}</td>
                     <td className="py-3 px-2 text-sm font-semibold text-gray-100 text-right">{session.energy}</td>
                     <td className="py-3 px-2 text-sm text-gray-300 text-right">
-                      {session.cost ? `$${session.cost.toFixed(2)}` : '-'}
+                      {session.cost ? `£${session.cost.toFixed(2)}` : '-'}
                     </td>
                     <td className={`py-3 px-2 text-sm text-center font-medium ${typeColor.bg} ${typeColor.text}`}>
                       {typeColor.label}
                     </td>
-                    <td className="py-3 px-2 text-sm text-gray-300 text-right">${costPerUnit}</td>
+                    <td className="py-3 px-2 text-sm text-gray-300 text-right">£{costPerUnit}</td>
                     <td className="py-3 px-2 text-right">
                       <button
                         onClick={() => onDeleteCharging(session.id)}
@@ -144,12 +144,12 @@ export default function ChargingsList({ charging, car, onDeleteCharging }) {
                   <div>
                     <p className="text-gray-400">Cost</p>
                     <p className="font-semibold text-gray-100">
-                      {session.cost ? `$${session.cost.toFixed(2)}` : '-'}
+                      {session.cost ? `£${session.cost.toFixed(2)}` : '-'}
                     </p>
                   </div>
                   <div>
                     <p className="text-gray-400">Per kWh</p>
-                    <p className="font-semibold text-gray-100">${costPerUnit}</p>
+                    <p className="font-semibold text-gray-100">£{costPerUnit}</p>
                   </div>
                 </div>
               </div>

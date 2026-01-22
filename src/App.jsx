@@ -314,7 +314,7 @@ function AppContent() {
                 />
 
                 {selectedCar.isElectric && (
-                  <>
+                  <div className="mt-12">
                     <ChargingForm
                       carId={selectedCarId}
                       carName={selectedCar.name}
@@ -326,7 +326,7 @@ function AppContent() {
                       car={selectedCar}
                       onDeleteCharging={handleDeleteCharging}
                     />
-                  </>
+                  </div>
                 )}
               </>
             )}
