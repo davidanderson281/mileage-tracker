@@ -67,7 +67,11 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
 
   const getWeeklyStatus = (weeklyDiff) => {
     if (!weeklyDiff) return { bg: 'bg-gray-700', text: 'text-gray-400', label: '-' };
-    return weeklyDiff > 96 
+
+    // determine threshold: if the car has an annual limit, divide by 52 weeks
+    const weeklyLimit = car?.annualLimit ? car.annualLimit / 52 : 96; // default to 96 if no limit
+
+    return weeklyDiff > weeklyLimit
       ? { bg: 'bg-red-900', text: 'text-red-200', label: '⚠️ Over limit' }
       : { bg: 'bg-green-900', text: 'text-green-200', label: '✅ Good' };
   };
@@ -203,23 +207,22 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
           >
             ← Previous
           </button>
-          
+
           <div className="flex gap-1 flex-wrap justify-center max-w-full">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
               // On mobile, show only current page, first, last, and adjacent pages
-              const showOnMobile = page === 1 || 
-                                   page === totalPages || 
-                                   Math.abs(page - currentPage) <= 1;
-              
+              const showOnMobile = page === 1 ||
+                page === totalPages ||
+                Math.abs(page - currentPage) <= 1;
+
               return (
                 <button
                   key={page}
                   onClick={() => setCurrentPage(page)}
-                  className={`px-3 py-2 rounded-md font-medium transition text-sm ${
-                    currentPage === page
+                  className={`px-3 py-2 rounded-md font-medium transition text-sm ${currentPage === page
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                  } ${!showOnMobile ? 'hidden sm:inline-block' : ''}`}
+                    } ${!showOnMobile ? 'hidden sm:inline-block' : ''}`}
                 >
                   {page}
                 </button>
