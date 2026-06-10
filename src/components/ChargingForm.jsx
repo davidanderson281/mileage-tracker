@@ -6,7 +6,7 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
   const [formData, setFormData] = useState({
     date: today,
     homeEnergy: '',
-    homeCostPerKwh: '',
+    homeCostPerKwh: '0.069',
     publicEnergy: '',
     publicCostPerKwh: '',
     notes: ''
@@ -107,7 +107,7 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
     setFormData({
       date: today,
       homeEnergy: '',
-      homeCostPerKwh: '',
+      homeCostPerKwh: '0.069',
       publicEnergy: '',
       publicCostPerKwh: '',
       notes: ''
@@ -196,19 +196,9 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
                 onChange={handleChange}
                 step="0.001"
                 min="0"
-                placeholder="e.g., 0.07"
+                placeholder="e.g., 0.069"
                 className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
               />
-              <div className="mt-2 flex flex-wrap gap-2 items-center">
-                <span className="text-xxs text-gray-500 uppercase tracking-wider font-semibold">Presets:</span>
-                <button
-                  type="button"
-                  onClick={() => setPresetRate('homeCostPerKwh', 0.069)}
-                  className="text-xs bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-gray-300 font-medium py-1 px-2.5 rounded-full transition-colors"
-                >
-                  6.9p (Intelligent Octopus Go - Oct 2026)
-                </button>
-              </div>
             </div>
           </div>
         </div>

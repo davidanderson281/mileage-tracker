@@ -6,7 +6,11 @@ export default function Login() {
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
-    if (authError) setErrorMessage(authError);
+    if (authError) {
+      setTimeout(() => {
+        setErrorMessage(authError);
+      }, 0);
+    }
   }, [authError]);
 
   const handleGoogleSignIn = async () => {

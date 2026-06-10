@@ -27,10 +27,12 @@ function AppContent() {
   // Subscribe to cars collection
   useEffect(() => {
     if (!currentUser) {
-      setCars([]);
-      setSelectedCarId(null);
-      setReadings([]);
-      setLoading(false);
+      setTimeout(() => {
+        setCars([]);
+        setSelectedCarId(null);
+        setReadings([]);
+        setLoading(false);
+      }, 0);
       return;
     }
 
@@ -52,8 +54,8 @@ function AppContent() {
           return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         });
         setCars(carsData);
-        if (carsData.length > 0 && !selectedCarId) {
-          setSelectedCarId(carsData[0].id);
+        if (carsData.length > 0) {
+          setSelectedCarId(prevId => prevId || carsData[0].id);
         }
         setLoading(false);
         setError(null);
@@ -71,7 +73,9 @@ function AppContent() {
   // Subscribe to readings for selected car
   useEffect(() => {
     if (!currentUser || !selectedCarId) {
-      setReadings([]);
+      setTimeout(() => {
+        setReadings([]);
+      }, 0);
       return;
     }
 
@@ -103,7 +107,9 @@ function AppContent() {
   // Subscribe to charging sessions for selected car
   useEffect(() => {
     if (!currentUser || !selectedCarId) {
-      setCharging([]);
+      setTimeout(() => {
+        setCharging([]);
+      }, 0);
       return;
     }
 
