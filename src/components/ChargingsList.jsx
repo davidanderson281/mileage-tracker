@@ -78,6 +78,7 @@ export default function ChargingsList({ charging, readings = [], car, onDeleteCh
   const totalSpent = stats.totalCost;
   const costPerMile = totalMiles > 0 ? (totalSpent / totalMiles) : 0;
   const costPerMilePence = (costPerMile * 100).toFixed(1);
+  const petrolCost = (totalMiles / 40) * 4.54609 * 1.55;
 
   const getTypeColor = (type) => {
     if (type === 'home') {
@@ -122,9 +123,17 @@ export default function ChargingsList({ charging, readings = [], car, onDeleteCh
           <div>
             <p className="text-sm font-semibold text-purple-400 mb-1">Lifetime Summary</p>
             <p className="text-xxs text-gray-400 mb-4 uppercase tracking-wider font-semibold">Since getting the car</p>
-            <p className="text-lg text-white font-medium mb-4">
+            <p className="text-lg text-white font-medium mb-2">
               You've driven <span className="text-blue-400 font-bold">{totalMiles.toLocaleString()}</span> miles so far and spent <span className="text-green-400 font-bold">£{totalSpent.toFixed(2)}</span> on charging.
             </p>
+            {totalMiles > 0 && (
+              <p className="text-xs text-gray-300 mb-4">
+                ⛽ Petrol equivalent cost: <span className="text-gray-100 font-semibold">£{petrolCost.toFixed(2)}</span>
+                {petrolCost > totalSpent && (
+                  <> (saving <span className="text-green-400 font-semibold">£{(petrolCost - totalSpent).toFixed(2)}</span>!)</>
+                )}
+              </p>
+            )}
           </div>
           <div className="text-xs text-gray-300 space-y-2 border-t border-gray-700/40 pt-3 flex justify-between items-center">
             <span>Average efficiency cost:</span>
