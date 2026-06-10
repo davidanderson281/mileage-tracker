@@ -71,6 +71,25 @@ export default function ChargingsList({ charging, readings = [], car, onDeleteCh
   };
   const weekRangeStr = `${formatDateShort(startOfWeek)} - ${formatDateShort(endOfWeek)}`;
 
+  // Weekly mileage calculations
+  let milesThisWeek = 0;
+  if (readings && readings.length > 0) {
+    const readingInCurrentWeekIndex = readings.findIndex(r => {
+      const rDate = new Date(r.date);
+      return rDate >= startOfWeek && rDate <= endOfWeek;
+    });
+
+    if (readingInCurrentWeekIndex !== -1) {
+      const currentWeekReading = readings[readingInCurrentWeekIndex];
+      if (readingInCurrentWeekIndex < readings.length - 1) {
+        const previousReading = readings[readingInCurrentWeekIndex + 1];
+        milesThisWeek = Math.max(0, currentWeekReading.mileage - previousReading.mileage);
+      } else {
+        milesThisWeek = Math.max(0, currentWeekReading.mileage - (car?.deliveryMileage ?? 0));
+      }
+    }
+  }
+
   // Lifetime metrics
   const deliveryMileage = car?.deliveryMileage ?? 0;
   const latestReading = readings && readings.length > 0 ? readings[0] : null;
@@ -103,7 +122,7 @@ export default function ChargingsList({ charging, readings = [], car, onDeleteCh
             <p className="text-sm font-semibold text-blue-400 mb-1">Weekly Spend Summary</p>
             <p className="text-xxs text-gray-400 mb-4 uppercase tracking-wider font-semibold">Calendar week: {weekRangeStr}</p>
             <p className="text-lg text-white font-medium mb-4">
-              You've spent <span className="text-green-400 font-bold">£{spentThisWeek.toFixed(2)}</span> on charging this week.
+              You've driven <span className="text-blue-400 font-bold">{milesThisWeek.toLocaleString()}</span> miles and spent <span className="text-green-400 font-bold">£{spentThisWeek.toFixed(2)}</span> on charging this week.
             </p>
           </div>
           <div className="text-xs text-gray-300 space-y-2 border-t border-gray-700/40 pt-3">
