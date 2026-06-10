@@ -3,7 +3,7 @@ import MileageChart from './MileageChart';
 
 const ITEMS_PER_PAGE = 10;
 
-export default function ReadingsList({ readings, car, onDeleteReading }) {
+export default function ReadingsList({ readings, car, onDeleteReading, hideChart = false }) {
   const [currentPage, setCurrentPage] = useState(1);
 
   const formatDate = (dateString) => {
@@ -245,7 +245,7 @@ export default function ReadingsList({ readings, car, onDeleteReading }) {
       </div>
 
       {/* Chart */}
-      <MileageChart readings={readingsWithDiff} car={car} />
+      {!hideChart && <MileageChart readings={readingsWithDiff} car={car} />}
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { collection, addDoc, deleteDoc, doc, onSnapshot, query, orderBy, where, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, deleteDoc, doc, onSnapshot, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
@@ -9,6 +9,7 @@ import ReadingForm from './components/ReadingForm';
 import ReadingsList from './components/ReadingsList';
 import ChargingForm from './components/ChargingForm';
 import ChargingsList from './components/ChargingsList';
+import MileageChart from './components/MileageChart';
 
 function AppContent() {
   const { currentUser, logout } = useAuth();
@@ -19,6 +20,9 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddCarModal, setShowAddCarModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('dashboard');
+
+
 
   // Subscribe to cars collection
   useEffect(() => {
@@ -293,42 +297,117 @@ function AppContent() {
               <CarList 
                 cars={cars} 
                 selectedCarId={selectedCarId}
-                onSelectCar={setSelectedCarId}
+                onSelectCar={(id) => {
+                  setSelectedCarId(id);
+                  setActiveTab('dashboard');
+                }}
                 onDeleteCar={handleDeleteCar}
                 onSetDefault={handleSetDefaultCar}
               />
             )}
 
             {selectedCar && (
-              <>
-                <ReadingForm 
-                  carId={selectedCarId}
-                  carName={selectedCar.name}
-                  existingReadings={readings}
-                  onAddReading={handleAddReading}
-                />
-                <ReadingsList 
-                  readings={readings} 
-                  car={selectedCar}
-                  onDeleteReading={handleDeleteReading}
-                />
+              <div className="mt-6">
+                {/* Navigation Tabs */}
+                <div className="flex border-b border-gray-700 mb-8 overflow-x-auto scrollbar-none">
+                  <button
+                    onClick={() => setActiveTab('dashboard')}
+                    className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${
+                      activeTab === 'dashboard'
+                        ? 'border-blue-500 text-white bg-blue-900/10'
+                        : 'border-transparent text-gray-400 hover:text-gray-200 hover:bg-gray-800/30'
+                    }`}
+                  >
+                    🏠 Dashboard
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('readings')}
+                    className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${
+                      activeTab === 'readings'
+                        ? 'border-blue-500 text-white bg-blue-900/10'
+                        : 'border-transparent text-gray-400 hover:text-gray-205 hover:bg-gray-800/30'
+                    }`}
+                  >
+                    📈 Mileage History
+                  </button>
+                  {selectedCar.isElectric && (
+                    <button
+                      onClick={() => setActiveTab('charging')}
+                      className={`flex items-center gap-2 px-5 py-3 text-sm font-semibold transition-all border-b-2 whitespace-nowrap ${
+                        activeTab === 'charging'
+                          ? 'border-blue-500 text-white bg-blue-900/10'
+                          : 'border-transparent text-gray-400 hover:text-gray-205 hover:bg-gray-800/30'
+                      }`}
+                    >
+                      ⚡ Charging History
+                    </button>
+                  )}
+                </div>
 
-                {selectedCar.isElectric && (
-                  <div className="mt-12">
-                    <ChargingForm
-                      carId={selectedCarId}
-                      carName={selectedCar.name}
-                      existingCharging={charging}
-                      onAddCharging={handleAddCharging}
-                    />
-                    <ChargingsList
-                      charging={charging}
+                {/* Tab Contents */}
+                {activeTab === 'dashboard' && (
+                  <div className="space-y-8">
+                    {/* Standalone summary banner at the top of the dashboard */}
+                    {selectedCar.isElectric && (
+                      <ChargingsList
+                        charging={charging}
+                        readings={readings}
+                        car={selectedCar}
+                        onDeleteCharging={handleDeleteCharging}
+                        showDashboardBannerOnly={true}
+                      />
+                    )}
+
+                    {/* Forms Side-by-Side on desktop / Stacked on mobile */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                      <ReadingForm 
+                        carId={selectedCarId}
+                        carName={selectedCar.name}
+                        existingReadings={readings}
+                        onAddReading={handleAddReading}
+                      />
+                      {selectedCar.isElectric && (
+                        <ChargingForm
+                          carId={selectedCarId}
+                          carName={selectedCar.name}
+                          existingCharging={charging}
+                          onAddCharging={handleAddCharging}
+                        />
+                      )}
+                    </div>
+
+                    {/* Mileage chart rendered directly on the dashboard */}
+                    {selectedCar.annualLimit > 0 && readings.length > 0 && (
+                      <div className="mt-8">
+                        <MileageChart readings={readings} car={selectedCar} />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeTab === 'readings' && (
+                  <div>
+                    <ReadingsList 
+                      readings={readings} 
                       car={selectedCar}
-                      onDeleteCharging={handleDeleteCharging}
+                      onDeleteReading={handleDeleteReading}
+                      hideChart={true}
                     />
                   </div>
                 )}
-              </>
+
+                {activeTab === 'charging' && selectedCar.isElectric && (
+                  <div>
+                    <ChargingsList
+                      charging={charging}
+                      readings={readings}
+                      car={selectedCar}
+                      onDeleteCharging={handleDeleteCharging}
+                      hideDashboardBanner={true}
+                    />
+                  </div>
+                )}
+              </div>
             )}
 
             {cars.length === 0 && (

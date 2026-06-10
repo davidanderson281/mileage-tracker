@@ -5,76 +5,111 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
 
   const [formData, setFormData] = useState({
     date: today,
-    energy: '',
-    cost: '',
-    costPerKwh: '',
-    type: 'home',
+    homeEnergy: '',
+    homeCostPerKwh: '',
+    publicEnergy: '',
+    publicCostPerKwh: '',
     notes: ''
   });
 
   const [error, setError] = useState('');
 
+  // Calculations for live preview
+  const homeEnergyVal = parseFloat(formData.homeEnergy) || 0;
+  const homeRateVal = parseFloat(formData.homeCostPerKwh) || 0;
+  const calculatedHomeCost = Math.round(homeEnergyVal * homeRateVal * 100) / 100;
+
+  const publicEnergyVal = parseFloat(formData.publicEnergy) || 0;
+  const publicRateVal = parseFloat(formData.publicCostPerKwh) || 0;
+  const calculatedPublicCost = Math.round(publicEnergyVal * publicRateVal * 100) / 100;
+
+  const calculatedTotalCost = Math.round((calculatedHomeCost + calculatedPublicCost) * 100) / 100;
+
   const handleSubmit = (e) => {
     e.preventDefault();
     setError('');
 
-    const energy = parseInt(formData.energy, 10);
-    if (isNaN(energy) || energy <= 0) {
-      setError('Please enter a valid energy amount (must be greater than 0)');
+    const homeEnergy = parseFloat(formData.homeEnergy) || 0;
+    const publicEnergy = parseFloat(formData.publicEnergy) || 0;
+
+    if (homeEnergy <= 0 && publicEnergy <= 0) {
+      setError('Please enter a valid energy amount (kWh) for either Home or Public charging');
       return;
     }
 
-    const cost = formData.cost ? Math.round(parseFloat(formData.cost) * 100) / 100 : null;
-    if (formData.cost && (isNaN(cost) || cost < 0)) {
-      setError('Please enter a valid cost');
+    const homeCostPerKwh = formData.homeCostPerKwh ? parseFloat(formData.homeCostPerKwh) : 0;
+    const publicCostPerKwh = formData.publicCostPerKwh ? parseFloat(formData.publicCostPerKwh) : 0;
+
+    if (formData.homeCostPerKwh && (isNaN(homeCostPerKwh) || homeCostPerKwh < 0)) {
+      setError('Please enter a valid Home cost per kWh');
       return;
     }
 
-    const costPerKwh = formData.costPerKwh ? Math.round(parseFloat(formData.costPerKwh) * 100) / 100 : null;
-    if (formData.costPerKwh && (isNaN(costPerKwh) || costPerKwh < 0)) {
-      setError('Please enter a valid cost per kWh');
-      return;
-    }
-
-    // Validate that either cost or costPerKwh is provided (except for "free" type)
-    if (formData.type !== 'free' && !cost && !costPerKwh) {
-      setError('Please enter either total cost or cost per kWh');
+    if (formData.publicCostPerKwh && (isNaN(publicCostPerKwh) || publicCostPerKwh < 0)) {
+      setError('Please enter a valid Public cost per kWh');
       return;
     }
 
     // Check for duplicate date
-    const duplicateDate = existingCharging.find(
-      charging => charging.date === formData.date && charging.type === formData.type
-    );
-    if (duplicateDate) {
-      setError(`A ${formData.type} charging session already exists for ${formData.date}. Please delete the existing entry first or choose a different date.`);
-      return;
+    if (homeEnergy > 0) {
+      const duplicateHome = existingCharging.find(
+        charging => charging.date === formData.date && charging.type === 'home'
+      );
+      if (duplicateHome) {
+        setError(`A home charging session already exists for ${formData.date}. Please delete the existing entry first or choose a different date.`);
+        return;
+      }
     }
 
-    // Calculate total cost if costPerKwh is provided
-    let finalCost = cost;
-    if (costPerKwh && !cost) {
-      finalCost = Math.round(costPerKwh * energy * 100) / 100;
+    if (publicEnergy > 0) {
+      const duplicatePublic = existingCharging.find(
+        charging => charging.date === formData.date && charging.type === 'public'
+      );
+      if (duplicatePublic) {
+        setError(`A public charging session already exists for ${formData.date}. Please delete the existing entry first or choose a different date.`);
+        return;
+      }
     }
 
-    const charging = {
-      carId,
-      date: formData.date,
-      energy,
-      cost: finalCost,
-      type: formData.type,
-      notes: formData.notes || null,
-      timestamp: new Date().toISOString()
-    };
+    const timestamp = new Date().toISOString();
 
-    onAddCharging(charging);
+    // Call onAddCharging for Home if details are provided
+    if (homeEnergy > 0) {
+      const homeCharging = {
+        carId,
+        date: formData.date,
+        energy: homeEnergy,
+        cost: calculatedHomeCost,
+        costPerKwh: homeCostPerKwh,
+        type: 'home',
+        notes: formData.notes || null,
+        timestamp
+      };
+      onAddCharging(homeCharging);
+    }
 
+    // Call onAddCharging for Public if details are provided
+    if (publicEnergy > 0) {
+      const publicCharging = {
+        carId,
+        date: formData.date,
+        energy: publicEnergy,
+        cost: calculatedPublicCost,
+        costPerKwh: publicCostPerKwh,
+        type: 'public',
+        notes: formData.notes || null,
+        timestamp
+      };
+      onAddCharging(publicCharging);
+    }
+
+    // Reset Form
     setFormData({
       date: today,
-      energy: '',
-      cost: '',
-      costPerKwh: '',
-      type: 'home',
+      homeEnergy: '',
+      homeCostPerKwh: '',
+      publicEnergy: '',
+      publicCostPerKwh: '',
       notes: ''
     });
   };
@@ -84,6 +119,13 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const setPresetRate = (field, rate) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: rate.toString()
     }));
   };
 
@@ -97,118 +139,188 @@ export default function ChargingForm({ carId, carName, existingCharging, onAddCh
 
   return (
     <form onSubmit={handleSubmit} className="bg-gray-800 rounded-lg shadow-md p-6 mb-6 border border-gray-700">
-      <h2 className="text-2xl font-bold text-white mb-1">⚡ Record Charging Session</h2>
-      <p className="text-sm text-gray-400 mb-4">{carName}</p>
+      <h2 className="text-2xl font-bold text-white mb-1">⚡ Record Weekly Charging</h2>
+      <p className="text-sm text-gray-400 mb-6">{carName}</p>
 
       {error && (
-        <div className="bg-red-900 border border-red-700 text-red-200 px-3 py-2 rounded mb-4">
+        <div className="bg-red-900 border border-red-700 text-red-200 px-3 py-2 rounded mb-6">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Date
-          </label>
-          <input
-            type="date"
-            name="date"
-            value={formData.date}
-            onChange={handleChange}
-            required
-            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
+      {/* Date Selection */}
+      <div className="mb-6 max-w-xs">
+        <label className="block text-sm font-medium text-gray-300 mb-1">
+          Date / Week Ending
+        </label>
+        <input
+          type="date"
+          name="date"
+          value={formData.date}
+          onChange={handleChange}
+          required
+          className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Energy (kWh)
-          </label>
-          <input
-            type="number"
-            name="energy"
-            value={formData.energy}
-            onChange={handleChange}
-            required
-            step="1"
-            min="1"
-            placeholder="e.g., 45"
-            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Charging Type
-          </label>
-          <select
-            name="type"
-            value={formData.type}
-            onChange={handleChange}
-            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          >
-            <option value="home">Home</option>
-            <option value="public">Public</option>
-            <option value="free">Free</option>
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Cost (£) - Optional
-          </label>
-          <input
-            type="number"
-            name="cost"
-            value={formData.cost}
-            onChange={handleChange}
-            step="0.01"
-            min="0"
-            placeholder="e.g., 12.50"
-            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            Cost per kWh (£) - Optional
-          </label>
-          <input
-            type="number"
-            name="costPerKwh"
-            value={formData.costPerKwh}
-            onChange={handleChange}
-            step="0.001"
-            min="0"
-            placeholder="e.g., 0.28"
-            className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-        </div>
-
-        {formData.type === 'free' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-300 mb-1">
-              Notes - Optional
-            </label>
-            <input
-              type="text"
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              placeholder="e.g., Work charging, Shopping centre"
-              className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Home Charging Section */}
+        <div className="p-4 bg-gray-750/50 rounded-lg border border-gray-700">
+          <h3 className="text-lg font-semibold text-green-400 mb-4 flex items-center gap-2">
+            🏠 Home Charging
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">
+                Energy Added (kWh)
+              </label>
+              <input
+                type="number"
+                name="homeEnergy"
+                value={formData.homeEnergy}
+                onChange={handleChange}
+                step="0.1"
+                min="0"
+                placeholder="e.g., 40.5"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">
+                Cost per kWh (£)
+              </label>
+              <input
+                type="number"
+                name="homeCostPerKwh"
+                value={formData.homeCostPerKwh}
+                onChange={handleChange}
+                step="0.001"
+                min="0"
+                placeholder="e.g., 0.07"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <div className="mt-2 flex flex-wrap gap-2 items-center">
+                <span className="text-xxs text-gray-500 uppercase tracking-wider font-semibold">Presets:</span>
+                <button
+                  type="button"
+                  onClick={() => setPresetRate('homeCostPerKwh', 0.069)}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-gray-300 font-medium py-1 px-2.5 rounded-full transition-colors"
+                >
+                  6.9p (Intelligent Octopus Go - Oct 2026)
+                </button>
+              </div>
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Public Charging Section */}
+        <div className="p-4 bg-gray-750/50 rounded-lg border border-gray-700">
+          <h3 className="text-lg font-semibold text-purple-400 mb-4 flex items-center gap-2">
+            ⚡ Public Charging
+          </h3>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">
+                Energy Added (kWh)
+              </label>
+              <input
+                type="number"
+                name="publicEnergy"
+                value={formData.publicEnergy}
+                onChange={handleChange}
+                step="0.1"
+                min="0"
+                placeholder="e.g., 25.0"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1">
+                Cost per kWh (£)
+              </label>
+              <input
+                type="number"
+                name="publicCostPerKwh"
+                value={formData.publicCostPerKwh}
+                onChange={handleChange}
+                step="0.001"
+                min="0"
+                placeholder="e.g., 0.50"
+                className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+              />
+              <div className="mt-2 flex flex-wrap gap-2 items-center">
+                <span className="text-xxs text-gray-500 uppercase tracking-wider font-semibold">Presets:</span>
+                <button
+                  type="button"
+                  onClick={() => setPresetRate('publicCostPerKwh', 0.50)}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-gray-300 font-medium py-1 px-2.5 rounded-full transition-colors"
+                >
+                  50p (Standard)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPresetRate('publicCostPerKwh', 0.75)}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-gray-300 font-medium py-1 px-2.5 rounded-full transition-colors"
+                >
+                  75p (Rapid)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPresetRate('publicCostPerKwh', 0.00)}
+                  className="text-xs bg-gray-700 hover:bg-gray-600 active:bg-gray-800 text-gray-300 font-medium py-1 px-2.5 rounded-full transition-colors"
+                >
+                  Free (0p)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* General Notes */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-300 mb-1">
+          Notes (Optional)
+        </label>
+        <input
+          type="text"
+          name="notes"
+          value={formData.notes}
+          onChange={handleChange}
+          placeholder="e.g., Weekly commute charging, holiday trip"
+          className="w-full px-3 py-2 border border-gray-600 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+      </div>
+
+      {/* Live Preview Summary */}
+      <div className="mt-6 p-4 bg-gray-850 border border-gray-700 rounded-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h4 className="font-semibold text-white">Estimated Cost Summary</h4>
+          <p className="text-xs text-gray-400">Calculated automatically as you type</p>
+        </div>
+        <div className="flex flex-wrap gap-4 text-center">
+          <div className="px-3 py-1 bg-gray-700/50 rounded border border-gray-700">
+            <p className="text-xxs text-gray-400 uppercase tracking-wider font-semibold">Home Cost</p>
+            <p className="text-sm font-semibold text-green-400">£{calculatedHomeCost.toFixed(2)}</p>
+          </div>
+          <div className="px-3 py-1 bg-gray-700/50 rounded border border-gray-700">
+            <p className="text-xxs text-gray-400 uppercase tracking-wider font-semibold">Public Cost</p>
+            <p className="text-sm font-semibold text-purple-400">£{calculatedPublicCost.toFixed(2)}</p>
+          </div>
+          <div className="px-3 py-1 bg-blue-900/20 rounded border border-blue-500/30">
+            <p className="text-xxs text-blue-300 uppercase tracking-wider font-semibold">Total Cost</p>
+            <p className="text-sm font-bold text-white">£{calculatedTotalCost.toFixed(2)}</p>
+          </div>
+        </div>
       </div>
 
       <button
         type="submit"
-        className="mt-4 w-full md:w-auto px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors focus:ring-offset-gray-800"
+        className="mt-6 w-full md:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors focus:ring-offset-gray-800"
       >
-        Record Charging
+        Record Weekly Charging
       </button>
     </form>
   );
 }
+
